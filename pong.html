@@ -3,26 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <title>Pong</title>
-  <style>
-    body {
-      background-color: #111;
-      color: white;
-      font-family: monospace, monospace;
-      text-align: center;
-      padding: 20px;
-    }
-    canvas {
-      background-color: black;
-      border: 2px solid white;
-      display: block;
-      margin: 20px auto;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <h1>Pong</h1>
   <p>Use W/S and arrow keys to move the paddles.</p>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <button class="back-button" onclick="location.href='index.html'">Back to Home page</button>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
@@ -31,118 +18,4 @@
     const paddleHeight = 80;
     const paddleWidth = 10;
     let leftPaddleY = canvas.height / 2 - paddleHeight / 2;
-    let rightPaddleY = canvas.height / 2 - paddleHeight / 2;
-    const paddleSpeed = 6;
-
-    let ballX = canvas.width / 2;
-    let ballY = canvas.height / 2;
-    let ballRadius = 10;
-    let ballSpeedX = 5;
-    let ballSpeedY = 3;
-
-    let leftScore = 0;
-    let rightScore = 0;
-
-    const keys = {};
-
-    window.addEventListener('keydown', e => {
-      keys[e.key] = true;
-    });
-
-    window.addEventListener('keyup', e => {
-      keys[e.key] = false;
-    });
-
-    function drawRect(x, y, w, h, color) {
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y, w, h);
-    }
-
-    function drawCircle(x, y, r, color) {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    function drawText(text, x, y, color) {
-      ctx.fillStyle = color;
-      ctx.font = '30px monospace';
-      ctx.fillText(text, x, y);
-    }
-
-    function resetBall() {
-      ballX = canvas.width / 2;
-      ballY = canvas.height / 2;
-      ballSpeedX = -ballSpeedX;
-      ballSpeedY = 3 * (Math.random() > 0.5 ? 1 : -1);
-    }
-
-    function update() {
-      // Move paddles
-      if (keys['w'] && leftPaddleY > 0) leftPaddleY -= paddleSpeed;
-      if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += paddleSpeed;
-      if (keys['ArrowUp'] && rightPaddleY > 0) rightPaddleY -= paddleSpeed;
-      if (keys['ArrowDown'] && rightPaddleY < canvas.height - paddleHeight) rightPaddleY += paddleSpeed;
-
-      // Move ball
-      ballX += ballSpeedX;
-      ballY += ballSpeedY;
-
-      // Ball collision with top and bottom
-      if (ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
-        ballSpeedY = -ballSpeedY;
-      }
-
-      // Ball collision with paddles
-      if (
-        ballX - ballRadius < paddleWidth &&
-        ballY > leftPaddleY &&
-        ballY < leftPaddleY + paddleHeight
-      ) {
-        ballSpeedX = -ballSpeedX;
-      } else if (
-        ballX + ballRadius > canvas.width - paddleWidth &&
-        ballY > rightPaddleY &&
-        ballY < rightPaddleY + paddleHeight
-      ) {
-        ballSpeedX = -ballSpeedX;
-      }
-
-      // Scores
-      if (ballX - ballRadius < 0) {
-        rightScore++;
-        resetBall();
-      } else if (ballX + ballRadius > canvas.width) {
-        leftScore++;
-        resetBall();
-      }
-    }
-
-    function draw() {
-      // Background
-      ctx.fillStyle = '#111';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Paddles
-      drawRect(0, leftPaddleY, paddleWidth, paddleHeight, 'lime');
-      drawRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight, 'lime');
-
-      // Ball
-      drawCircle(ballX, ballY, ballRadius, 'white');
-
-      // Scores
-      drawText(leftScore, canvas.width / 4, 50, 'lime');
-      drawText(rightScore, (canvas.width * 3) / 4, 50, 'lime');
-    }
-
-    function gameLoop() {
-      update();
-      draw();
-      requestAnimationFrame(gameLoop);
-    }
-
-    gameLoop();
-  </script>
-</body>
-</html>
+    let rightPaddleY = canvas.height
