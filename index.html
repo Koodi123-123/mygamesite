@@ -2,46 +2,39 @@
 <html lang="fi">
 <head>
   <meta charset="UTF-8">
-  <title>Minun Pelini</title>
+  <title>My game site</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #111;
+      background-color: #111;
       color: white;
+      font-family: sans-serif;
       text-align: center;
+      padding: 20px;
     }
-    canvas {
-      border: 2px solid white;
-      margin-top: 20px;
+    a {
+      color: #0f0;
+      text-decoration: none;
+      font-size: 20px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 15px 0;
     }
   </style>
 </head>
 <body>
-  <h1>Tervetuloa pelaamaan!</h1>
-  <canvas id="gameCanvas" width="400" height="400"></canvas>
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+  <h1>Welcome to My Game Site</h1>
+  <p>Select game from the list below:</p>
 
-    let x = 200, y = 200;
+  <ul>
+    <li><a href="squaregame.html">🟩 Square game</a></li>
+    <li><a href="pong.html">🏓 Pong</a></li>
+    <li><a href="snake.html">🐍 Snake</a></li>
+  </ul>
 
-    function draw() {
-      ctx.fillStyle = "#111";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "lime";
-      ctx.fillRect(x - 10, y - 10, 20, 20);
-    }
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp") y -= 10;
-      if (e.key === "ArrowDown") y += 10;
-      if (e.key === "ArrowLeft") x -= 10;
-      if (e.key === "ArrowRight") x += 10;
-      draw();
-    });
-
-    draw();
-  </script>
+  <p>More games coming soon!</p>
 </body>
 </html>
