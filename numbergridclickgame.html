@@ -3,105 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <title>Number Grid Click Game</title>
-  <style>
-    body {
-      background-color: #111;
-      color: white;
-      font-family: sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    #grid {
-      display: grid;
-      grid-template-columns: repeat(5, 60px);
-      grid-gap: 10px;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    .cell {
-      background-color: #222;
-      border: 2px solid white;
-      border-radius: 6px;
-      font-size: 24px;
-      line-height: 60px;
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.3s;
-    }
-    .cell.correct {
-      background-color: limegreen;
-      color: black;
-      cursor: default;
-    }
-    #timer {
-      font-size: 20px;
-      margin-top: 15px;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <h1>Number Grid Click Game</h1>
   <p>Click the numbers from 1 to 25 in order as fast as you can!</p>
+
   <div id="grid"></div>
   <div id="timer">Time: 0.00 s</div>
   <div id="result"></div>
+
+  <button class="back-button" onclick="location.href='index.html'">Back to Home page</button>
 
   <script>
     const grid = document.getElementById('grid');
     const timerDisplay = document.getElementById('timer');
     const resultDisplay = document.getElementById('result');
 
-    let numbers = Array.from({length: 25}, (_, i) => i + 1);
+    let numbers = Array.from({ length: 25 }, (_, i) => i + 1);
     let currentNumber = 1;
     let startTime = null;
     let timerInterval = null;
 
-    // Shuffle function (Fisher-Yates)
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    function startTimer() {
-      startTime = Date.now();
-      timerInterval = setInterval(() => {
-        const elapsed = (Date.now() - startTime) / 1000;
-        timerDisplay.textContent = `Time: ${elapsed.toFixed(2)} s`;
-      }, 100);
-    }
-
-    function stopTimer() {
-      clearInterval(timerInterval);
-    }
-
-    function createGrid() {
-      shuffle(numbers);
-      grid.innerHTML = '';
-      numbers.forEach(num => {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.textContent = num;
-        cell.addEventListener('click', () => {
-          if (!startTime && num === 1) {
-            startTimer();
-          }
-          if (num === currentNumber) {
-            cell.classList.add('correct');
-            currentNumber++;
-            if (currentNumber > 25) {
-              stopTimer();
-              resultDisplay.textContent = `Congratulations! You finished in ${(Date.now() - startTime)/1000} seconds.`;
-            }
-          }
-        });
-        grid.appendChild(cell);
-      });
-    }
-
-    createGrid();
-  </script>
-</body>
-</html>
+        const j = Math.floor
