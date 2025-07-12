@@ -1,5 +1,3 @@
-/* Yleiset tyylit */
-
 body {
   background-color: #111;
   color: white;
@@ -19,48 +17,22 @@ ul {
   list-style: none;
   padding: 0;
   max-width: 300px;
-  margin: 40px auto;
+  margin: 20px auto;
 }
 
 li {
   margin: 15px 0;
-  background: #222;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  font-size: 22px;
+}
+
+li a {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 6px;
   transition: background-color 0.3s;
 }
 
-li:hover {
+li a:hover {
   background-color: limegreen;
   color: black;
-}
-
-.game-icon {
-  font-size: 28px;
-  user-select: none;
-}
-
-/* Back button -tyyli */
-
-.back-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: none;
-  background-color: limegreen;
-  color: black;
-  cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
-  box-shadow: 0 4px 6px rgba(0, 128, 0, 0.4);
-}
-
-.back-button:hover {
-  background-color: #32cd32;
-  color: white;
 }
