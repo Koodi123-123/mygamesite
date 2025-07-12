@@ -36,3 +36,52 @@ li a:hover {
   background-color: limegreen;
   color: black;
 }
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(5, 60px);
+  grid-gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.cell {
+  background-color: #222;
+  border: 2px solid white;
+  border-radius: 6px;
+  font-size: 24px;
+  line-height: 60px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s;
+  color: white;
+  text-align: center;
+}
+
+.cell.correct {
+  background-color: limegreen;
+  color: black;
+  cursor: default;
+}
+
+#timer, #result {
+  font-size: 20px;
+  margin-top: 15px;
+}
+
+.back-button {
+  margin-top: 20px;
+  padding: 8px 16px;
+  font-size: 16px;
+  border: none;
+  background-color: limegreen;
+  color: black;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.back-button:hover {
+  background-color: #0c0;
+}
+
