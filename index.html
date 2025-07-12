@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <title>Minun Pelini</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+    }
+    canvas {
+      border: 2px solid white;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tervetuloa pelaamaan!</h1>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let x = 200, y = 200;
+
+    function draw() {
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "lime";
+      ctx.fillRect(x - 10, y - 10, 20, 20);
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowUp") y -= 10;
+      if (e.key === "ArrowDown") y += 10;
+      if (e.key === "ArrowLeft") x -= 10;
+      if (e.key === "ArrowRight") x += 10;
+      draw();
+    });
+
+    draw();
+  </script>
+</body>
+</html>
