@@ -27,4 +27,50 @@
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function startTimer() {
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        timerDisplay.textContent = `Time: ${elapsed.toFixed(2)} s`;
+      }, 100);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function createGrid() {
+      shuffle(numbers);
+      grid.innerHTML = '';
+      numbers.forEach(num => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.textContent = num;
+        cell.addEventListener('click', () => {
+          if (!startTime && num === 1) {
+            startTimer();
+          }
+          if (num === currentNumber) {
+            cell.classList.add('correct');
+            currentNumber++;
+            if (currentNumber > 25) {
+              stopTimer();
+              const timeTaken = ((Date.now() - startTime) / 1000).toFixed(2);
+              resultDisplay.textContent = `Congratulations! You finished in ${timeTaken} seconds.`;
+            }
+          }
+        });
+        grid.appendChild(cell);
+      });
+    }
+
+    createGrid();
+  </script>
+</body>
+</html>
