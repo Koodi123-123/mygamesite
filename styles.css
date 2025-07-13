@@ -8,6 +8,39 @@ body {
   margin: 0;
 }
 
+/* Grid container styling */
+#grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 340px;  /* 5 cells * (60px + 2*5px margin) */
+  margin: 20px auto;
+  background-color: transparent; /* Ensure it doesn't override body background */
+}
+
+/* Individual cell styling */
+.cell {
+  background-color: #333;       /* Dark gray cells */
+  color: white;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  margin: 5px;
+  font-size: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+/* Cell turns green when clicked correctly */
+.cell.correct {
+  background-color: #4caf50;
+  color: white;
+}
+
 /* All buttons styled with hot pink background and white text */
 button, .back-button, #mute-btn {
   background-color: #ff69b4; /* Hot pink */
@@ -25,19 +58,31 @@ button:hover, .back-button:hover, #mute-btn:hover {
   background-color: #e055a0;
 }
 
-/* Links and other text remain white */
+/* Optional focus style for accessibility */
+button:focus {
+  outline: 2px solid #ff69b4;
+  outline-offset: 2px;
+}
+
+/* Ensure links and headers stay white */
 a, p, h1, h2, h3, li {
   color: white;
 }
 
-/* If you have links that are green, override to white */
 a {
   color: white;
   text-decoration: none;
 }
 
-/* Optionally, add focus styles for accessibility */
-button:focus {
-  outline: 2px solid #ff69b4;
-  outline-offset: 2px;
+/* Timer and result styling */
+#timer, #result {
+  margin-top: 20px;
+  font-size: 18px;
+  background-color: transparent;
+}
+
+/* Controls area */
+#controls {
+  margin-top: 30px;
+  background-color: transparent;
 }
