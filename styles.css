@@ -118,3 +118,28 @@ a {
   margin-top: 30px;
   background-color: transparent;
 }
+
+/* Shake animation keyframes for fail animation */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  50% { transform: translateX(8px); }
+  75% { transform: translateX(-8px); }
+  100% { transform: translateX(0); }
+}
+
+/* Success message styling */
+.result-message.success {
+  color: #4caf50; /* vihreä */
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-top: 15px;
+}
+
+/* Fail message styling */
+.result-message.fail {
+  color: #e74c3c; /* punainen */
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-top: 15px;
+}
