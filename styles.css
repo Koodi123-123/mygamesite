@@ -15,7 +15,7 @@ h1 {
   font-size: 1.3em;
   font-weight: bold;
   margin-bottom: 10px;
-  color: #0f0;
+  color: #ff69b4; /* pinkki */
 }
 
 #grid {
@@ -47,11 +47,11 @@ h1 {
 }
 
 .cell.correct {
-  background-color: #2a8;
-  color: #cfc;
+  background-color: #ff69b4; /* pinkki */
+  color: #fff;
   cursor: default;
-  border-color: #0c0;
-  box-shadow: 0 0 10px #0c0 inset;
+  border-color: #d15b9e;
+  box-shadow: 0 0 10px #d15b9e inset;
 }
 
 #timer {
@@ -79,25 +79,25 @@ button {
   margin: 6px 6px 6px 0;
   border-radius: 6px;
   border: none;
-  background-color: #444;
-  color: #eee;
-  box-shadow: 0 3px 6px #111 inset;
+  background-color: #ff69b4; /* pinkki */
+  color: #fff;
+  box-shadow: 0 3px 6px #b34780 inset;
   transition: background-color 0.25s ease;
   user-select: none;
 }
 
 button:hover {
-  background-color: #0a84ff;
+  background-color: #e055a0; /* tummempi pinkki hoverissa */
   color: #fff;
 }
 
 .back-button {
-  background-color: #666;
+  background-color: #ff69b4; /* pinkki */
   box-shadow: none;
 }
 
 .back-button:hover {
-  background-color: #555;
+  background-color: #e055a0;
 }
 
 .modal {
