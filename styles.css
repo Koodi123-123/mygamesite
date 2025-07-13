@@ -8,7 +8,6 @@ body {
 }
 
 h1 {
-  margin-bottom: 10px;
   color: #39FF14;
 }
 
@@ -64,14 +63,19 @@ h1 {
 
 #result {
   margin-top: 15px;
-  margin-bottom: 10px;
   font-size: 1.1em;
   font-weight: 600;
   min-height: 4em;
+  white-space: pre-line; /* säilyttää rivinvaihdot hiirten jälkeen */
+  text-align: center;    /* keskitetty teksti */
 }
 
 #controls {
-  margin-top: 5px;
+  margin-top: 8px; /* aiemman 20px sijaan */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;        /* aiemman 10px sijaan */
 }
 
 button {
