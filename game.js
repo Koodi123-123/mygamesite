@@ -94,7 +94,7 @@ function startMoving() {
         cell.style.gridColumnStart = Math.floor(Math.random() * maxPos) + 1;
       }
     }
-  }, 3000);
+  }, 6000);
 }
 
 /**
