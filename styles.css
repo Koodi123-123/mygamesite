@@ -1,233 +1,117 @@
-/* Dark background and white text for entire page */
+/* Basic styling for the body element */
 body {
-  background-color: #111;  /* Very dark background */
-  color: white;            /* White text */
-  font-family: sans-serif;
-  text-align: center;
-  padding: 20px;
-  margin: 0;
+  background-color: #222;       /* Dark background for contrast */
+  color: #eee;                  /* Light text color */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 20px;
+  text-align: center;           /* Center-align text and content */
 }
 
-/* Grid container styling */
+/* Styling for the number grid container */
+/* Uses CSS Grid with dynamic number of columns based on --grid-columns variable */
 #grid {
   display: grid;
-  grid-template-columns: repeat(5, 60px);
-  grid-gap: 10px;
-  justify-content: center;
-  max-width: 340px;
-  margin: 20px auto;
+  grid-template-columns: repeat(var(--grid-columns, 5), 1fr); /* default to 5 columns */
+  grid-gap: 10px;             /* Space between cells */
+  max-width: 90vw;            /* Responsive max width */
+  margin: 20px auto;          /* Center horizontally with margin */
 }
 
-/* Individual cell styling */
+/* Styling for individual number cells */
 .cell {
-  background-color: #333;       /* Dark gray cells */
+  background-color: #444;         /* Dark gray background */
+  border-radius: 8px;             /* Rounded corners */
+  padding: 20px 0;                /* Vertical padding for height */
+  font-size: 24px;                /* Large font for readability */
+  font-weight: bold;
+  cursor: pointer;                /* Pointer cursor to indicate clickability */
+  user-select: none;              /* Disable text selection */
+  color: #ff69b4;                 /* Pinkish text color */
+  box-shadow: 0 0 6px #ff69b4;   /* Glow effect */
+  transition: background-color 0.3s, color 0.3s; /* Smooth transitions */
+}
+
+/* Styling for cells that have been correctly clicked */
+.cell.clicked {
+  background-color: #222;    /* Darker background */
+  color: #888;               /* Dimmed text */
+  cursor: default;           /* Disable pointer cursor */
+  box-shadow: none;          /* Remove glow */
+}
+
+/* Styling for cells clicked wrongly */
+.cell.wrong {
+  background-color: #b22;   /* Red background */
+  color: white;             /* White text for contrast */
+  animation: shake 0.3s;    /* Shake animation for feedback */
+}
+
+/* Keyframes for shake animation to indicate wrong click */
+@keyframes shake {
+  0% { transform: translateX(0px); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+  100% { transform: translateX(0px); }
+}
+
+/* Style for the Show Instructions button */
+#show-instructions-btn {
+  background-color: #ff69b4;
   color: white;
-  display: inline-flex;
+  border: none;
+  padding: 10px 18px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+#show-instructions-btn:hover {
+  background-color: #e055a0; /* Slightly darker pink on hover */
+}
+
+/* Modal background overlay */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0,0,0,0.7); /* Semi-transparent black */
+  display: flex;
   justify-content: center;
   align-items: center;
-  width: 60px;
-  height: 60px;
-  margin: 5px;
-  font-size: 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s, transform 0.3s;
+  z-index: 9999;          /* Above other content */
 }
 
-/* Cell turns green when clicked correctly */
-.cell.correct {
-  background-color: #4caf50;
-  color: white;
+/* Utility class to hide elements */
+.hidden {
+  display: none;
 }
 
-/* Highlight next number with gold border */
-.cell[style*="border"] {
-  border: 2px solid #FFD700 !important;
-  font-weight: bold !important;
+/* Modal content container */
+.modal-content {
+  background-color: #222;
+  color: #eee;
+  padding: 20px 30px;
+  border-radius: 10px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;          /* Scroll if content is too tall */
+  box-shadow: 0 0 15px #ff69b4;
+  text-align: left;          /* Left align text for readability */
 }
 
-/* Error flash animation for wrong click */
-.cell.error {
-  background-color: #b00020 !important;
-  animation: flashRed 0.3s ease;
-}
-
-/* Result messages */
-.result-message.success {
-  color: #4caf50;
-  font-weight: bold;
+/* Modal Close button styling */
+#close-instructions-btn {
   margin-top: 15px;
-}
-
-.result-message.fail {
-  color: #b00020;
-  font-weight: bold;
-  margin-top: 15px;
-}
-
-/* Flash red keyframe */
-@keyframes flashRed {
-  0% { background-color: #b00020; }
-  50% { background-color: #333; }
-  100% { background-color: #b00020; }
-}
-
-/* All buttons styled with hot pink background and white text */
-button, .back-button, #mute-btn {
-  background-color: #ff69b4; /* Hot pink */
+  background-color: #ff69b4;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
+  padding: 10px 18px;
   font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-/* Hover effect for buttons - a bit darker pink */
-button:hover, .back-button:hover, #mute-btn:hover {
-  background-color: #e055a0;
-}
-
-/* Optional focus style for accessibility */
-button:focus {
-  outline: 2px solid #ff69b4;
-  outline-offset: 2px;
-}
-
-/* Ensure links and headers stay white */
-a, p, h1, h2, h3, li {
-  color: white;
-}
-
-a {
-  color: white;
-  text-decoration: none;
-}
-
-/* Timer and result styling */
-#timer, #result {
-  margin-top: 20px;
-  font-size: 18px;
-  background-color: transparent;
-}
-
-/* Controls area */
-#controls {
-  margin-top: 30px;
-  background-color: transparent;
-}
-
-/* Shake animation keyframes for fail animation */
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-8px); }
-  50% { transform: translateX(8px); }
-  75% { transform: translateX(-8px); }
-  100% { transform: translateX(0); }
-}
-
-/* Success message styling */
-.result-message.success {
-  color: #4caf50; /* vihreä */
-  font-weight: bold;
-  font-size: 1.2em;
-  margin-top: 15px;
-}
-
-/* Fail message styling */
-.result-message.fail {
-  color: #e74c3c; /* punainen */
-  font-weight: bold;
-  font-size: 1.2em;
-  margin-top: 15px;
-}
-
-/* Success animation for grid when game ends */
-@keyframes successFlash {
-  0%, 100% { background-color: #4caf50; }
-  50% { background-color: #81c784; }
-}
-
-#grid.success-animation {
-  animation: successFlash 1s ease-in-out 3;
-}
-
-/* Fail animation for wrong click on a cell */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-8px); }
-  40%, 80% { transform: translateX(8px); }
-}
-
-.cell.fail-animation {
-  animation: shake 0.5s;
-}
-
-/* ...existing styles... */
-
-/* Make grid dynamic with variable columns for responsive */
-#grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); /* flexible columns */
-  grid-gap: 10px;
-  max-width: 90vw;
-  margin: 20px auto;
-}
-
-/* Cells resize a bit smaller on small screens */
-.cell {
-  width: 50px;
-  height: 50px;
-  font-size: 18px;
-  margin: 5px auto;
-}
-
-/* On larger screens, cells bigger */
-@media (min-width: 600px) {
-  .cell {
-    width: 60px;
-    height: 60px;
-    font-size: 20px;
-  }
-}
-
-/* Controls container flex layout for better mobile scaling */
-#controls {
-  margin-top: 30px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-}
-
-/* Buttons scale nicely on mobile, avoid overlap */
-button, .back-button, #mute-btn, #restart-btn {
-  background-color: #ff69b4; /* Hot pink */
-  color: white;
-  border: none;
   border-radius: 6px;
-  padding: 12px 20px;
-  font-size: 16px;
   cursor: pointer;
-  min-width: 120px;
-  max-width: 90vw;
-  box-sizing: border-box;
-  transition: background-color 0.3s;
 }
-
-/* Hover effect */
-button:hover, .back-button:hover, #mute-btn:hover, #restart-btn:hover {
+#close-instructions-btn:hover {
   background-color: #e055a0;
-}
-
-/* Buttons stack nicely on small screens */
-@media (max-width: 450px) {
-  #controls {
-    flex-direction: column;
-  }
-  button, .back-button, #mute-btn, #restart-btn {
-    min-width: 100%;
-  }
 }
