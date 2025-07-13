@@ -164,3 +164,70 @@ a {
 .cell.fail-animation {
   animation: shake 0.5s;
 }
+
+/* ...existing styles... */
+
+/* Make grid dynamic with variable columns for responsive */
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); /* flexible columns */
+  grid-gap: 10px;
+  max-width: 90vw;
+  margin: 20px auto;
+}
+
+/* Cells resize a bit smaller on small screens */
+.cell {
+  width: 50px;
+  height: 50px;
+  font-size: 18px;
+  margin: 5px auto;
+}
+
+/* On larger screens, cells bigger */
+@media (min-width: 600px) {
+  .cell {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+  }
+}
+
+/* Controls container flex layout for better mobile scaling */
+#controls {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Buttons scale nicely on mobile, avoid overlap */
+button, .back-button, #mute-btn, #restart-btn {
+  background-color: #ff69b4; /* Hot pink */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  min-width: 120px;
+  max-width: 90vw;
+  box-sizing: border-box;
+  transition: background-color 0.3s;
+}
+
+/* Hover effect */
+button:hover, .back-button:hover, #mute-btn:hover, #restart-btn:hover {
+  background-color: #e055a0;
+}
+
+/* Buttons stack nicely on small screens */
+@media (max-width: 450px) {
+  #controls {
+    flex-direction: column;
+  }
+  button, .back-button, #mute-btn, #restart-btn {
+    min-width: 100%;
+  }
+}
