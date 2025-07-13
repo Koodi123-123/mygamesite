@@ -30,26 +30,35 @@ let timer = 60.0;
 let timerInterval = null;
 let shuffleInterval = null;
 let isMuted = false;
-let clickedNumbers = new Set();  // Tracks clicked cell positions
-let gameStarted = false; // Tracks if timer & shuffle started
-let score = 0; // Player score
+let clickedNumbers = new Set();
+let gameStarted = false;
+let score = 0;
 
-// Äänet valmiina URL-osoitteista
+// Äänet
 const soundCorrect = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
 const soundWrong = new Audio('https://actions.google.com/sounds/v1/cartoon/boing.ogg');
 const soundGameOver = new Audio('https://actions.google.com/sounds/v1/cartoon/concussive_drum_hit.ogg');
+const soundLevelUp = new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg');
 
-// Esiladataan äänet
 function preloadSounds() {
-  [soundCorrect, soundWrong, soundGameOver].forEach(sound => {
+  [soundCorrect, soundWrong, soundGameOver, soundLevelUp].forEach(sound => {
     sound.load();
     sound.addEventListener('error', () => {
       console.error(`Äänen lataus epäonnistui: ${sound.src}`);
     });
   });
+
+  // Aktivoi selaimen äänet käyttäjän ensimmäisestä klikkauksesta
+  document.body.addEventListener('click', () => {
+    [soundWrong, soundGameOver, soundLevelUp].forEach(snd => {
+      snd.play().then(() => {
+        snd.pause();
+        snd.currentTime = 0;
+      }).catch(() => {});
+    });
+  }, { once: true });
 }
 
-// Soita ääni turvallisesti
 function playSound(audio) {
   if (isMuted) return;
   if (audio.readyState >= 2) {
@@ -132,9 +141,7 @@ function handleClick(cell) {
     restartBtn.disabled = false;
   }
 
-  if (!gameStarted) {
-    return;
-  }
+  if (!gameStarted) return;
 
   if (number === nextNumber) {
     cell.classList.add('correct');
@@ -145,6 +152,7 @@ function handleClick(cell) {
     playSound(soundCorrect);
 
     if (nextNumber > gridSize) {
+      playSound(soundLevelUp);
       endGame(true);
     }
   } else {
@@ -154,6 +162,7 @@ function handleClick(cell) {
     flashBackground();
     playSound(soundWrong);
   }
+
   updateResult();
 }
 
@@ -176,6 +185,7 @@ function startTimer() {
     timer -= 0.01;
     if (timer <= 0) {
       timer = 0;
+      playSound(soundGameOver);
       endGame(false);
     }
     timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
@@ -192,33 +202,23 @@ function endGame(success) {
   gameStarted = false;
   restartBtn.disabled = false;
 
-  playSound(soundGameOver);
-
-  if (success) {
+  if (!success) {
+    playSound(soundGameOver);
+    showOverlay(`<strong>⏱️ Time's up! Try again to reach next level.</strong><br/>`);
+  } else {
     showOverlay(`<strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>`);
-
-    resultDisplay.innerHTML = `
-      Final Score: ${score}<br/>
-      Correct Clicks: ${correctClicks}<br/>
-      Wrong Clicks: ${wrongClicks}
-    `;
-
     level++;
-
     setTimeout(() => {
       hideOverlay();
       initGame();
     }, 3000);
-
-  } else {
-    showOverlay(`<strong>⏱️ Time's up! Try again to reach next level.</strong><br/>`);
-
-    resultDisplay.innerHTML = `
-      Final Score: ${score}<br/>
-      Correct Clicks: ${correctClicks}<br/>
-      Wrong Clicks: ${wrongClicks}
-    `;
   }
+
+  resultDisplay.innerHTML = `
+    Final Score: ${score}<br/>
+    Correct Clicks: ${correctClicks}<br/>
+    Wrong Clicks: ${wrongClicks}
+  `;
 }
 
 function showOverlay(message) {
@@ -248,11 +248,9 @@ function stopShuffle() {
 function shuffleUnclickedNumbers() {
   const cells = Array.from(grid.children);
   const unclickedCells = cells.filter(c => c.classList.contains('cell') && c.dataset.position !== undefined && !clickedNumbers.has(c.dataset.position));
-
   if (unclickedCells.length <= 1) return;
 
   const unclickedNumbers = unclickedCells.map(c => parseInt(c.dataset.number));
-
   shuffle(unclickedNumbers);
 
   for (let i = 0; i < unclickedCells.length; i++) {
