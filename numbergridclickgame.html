@@ -22,13 +22,18 @@
   <p>Click the numbers from 1 to N in order. You complete the level if you manage to click all the numbers before time runs out.</p>
   <p>Time starts running from first click.</p>
 
-  <!-- Level display container -->
-  <div id="level-display"></div>
+  <div id="level-bar">
+  <button id="show-instructions-btn" title="Instructions">❓</button>
+  <span id="level-display">Level 1</span>
+  <button id="mute-btn" title="Toggle Mute">🔊</button>
+</div>
 
   <!-- Number grid container with relative position -->
   <div id="grid" style="position: relative;">
     <!-- game overlay inside grid -->
     <div id="game-overlay" class="hidden"></div>
+      <button id="restart-btn">🔁 Restart Game</button>
+    </div>
   </div>
 
   <!-- Timer display -->
