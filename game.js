@@ -20,6 +20,7 @@ let shuffleInterval = null;
 let isMuted = false;
 let clickedNumbers = new Set();  // Tracks clicked cell positions
 let gameStarted = false; // Tracks if timer & shuffle started
+let score = 0; // Player score
 
 function initGame() {
   levelDisplay.textContent = `Level ${level}`;
@@ -28,15 +29,15 @@ function initGame() {
   correctClicks = 0;
   wrongClicks = 0;
   timer = 60.0;
+  score = 0;
   clickedNumbers.clear();
-  resultDisplay.textContent = '';
+  resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
   timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
   gameStarted = false;  // Reset start flag
-  restartBtn.disabled = true; // Estä restart alussa
   setupGrid();
   stopTimer();
   stopShuffle();
-  updateResult();
+  restartBtn.disabled = true; // Disable restart until game ends
 }
 
 function setupGrid() {
@@ -70,6 +71,7 @@ function shuffle(array) {
   }
 }
 
+// Handles clicks on cells
 function handleClick(cell) {
   const number = parseInt(cell.dataset.number);
 
@@ -78,10 +80,11 @@ function handleClick(cell) {
     gameStarted = true;
     startTimer();
     startShuffle();
+    restartBtn.disabled = false; // Allow restart once started
   }
 
   if (!gameStarted) {
-    // Ignore clicks if game not started and number !=1
+    // Ignore clicks if game not started and number != 1
     return;
   }
 
@@ -90,32 +93,35 @@ function handleClick(cell) {
     clickedNumbers.add(cell.dataset.position);
     nextNumber++;
     correctClicks++;
-    updateResult();
-
+    score += 10; // +10 points for correct click
     if (nextNumber > gridSize) {
       endGame(true);
     }
   } else {
     wrongClicks++;
-    updateResult();
+    score -= 5; // -5 points for wrong click
+    if (score < 0) score = 0; // Prevent negative score
     flashBackground();
   }
+  updateResult();
 }
 
+// Flash background red on wrong click (unless muted)
 function flashBackground() {
   if (isMuted) return;
-  const originalColor = document.body.style.backgroundColor || '#222';
+  const originalColor = document.body.style.backgroundColor;
   document.body.style.backgroundColor = '#ff4c4c';
   setTimeout(() => {
-    document.body.style.backgroundColor = originalColor;
+    document.body.style.backgroundColor = originalColor || '#222';
   }, 200);
 }
 
+// Updates the score and clicks display
 function updateResult() {
-  const score = correctClicks * 10 - wrongClicks * 5;
-  resultDisplay.textContent = `Correct: ${correctClicks} | Wrong: ${wrongClicks} | Score: ${score}`;
+  resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
 }
 
+// Starts the countdown timer
 function startTimer() {
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
@@ -128,37 +134,27 @@ function startTimer() {
   }, 10);
 }
 
+// Stops the countdown timer
 function stopTimer() {
   clearInterval(timerInterval);
 }
 
+// Ends the game, shows message and either increments level or allows retry
 function endGame(success) {
   stopTimer();
   stopShuffle();
   gameStarted = false;
-
-  const score = correctClicks * 10 - wrongClicks * 5;
+  restartBtn.disabled = false;
 
   if (success) {
-    resultDisplay.textContent = `🎉 Congratulations! You completed Level ${level}!\n` +
-      `Score: ${score}\n` +
-      `Correct clicks: ${correctClicks} | Wrong clicks: ${wrongClicks}`;
+    resultDisplay.textContent = `Congratulations! You completed Level ${level}!\nFinal Score: ${score}`;
     level++;
-    restartBtn.disabled = true; // Estetään restart, peli etenee automaattisesti
-
-    // Aloitetaan uusi taso pienen viiveen jälkeen
-    setTimeout(() => {
-      initGame();
-    }, 3000);
-
   } else {
-    resultDisplay.textContent = `⏰ Time's up! Try again to reach next level.\n` +
-      `Score: ${score}\n` +
-      `Correct clicks: ${correctClicks} | Wrong clicks: ${wrongClicks}`;
-    restartBtn.disabled = false; // Voidaan käynnistää uudelleen
+    resultDisplay.textContent = `Time's up! Try again to reach next level.\nFinal Score: ${score}`;
   }
 }
 
+// Starts the interval that shuffles unclicked numbers every 6 seconds
 function startShuffle() {
   clearInterval(shuffleInterval);
   shuffleInterval = setInterval(() => {
@@ -166,10 +162,12 @@ function startShuffle() {
   }, 6000);
 }
 
+// Stops the shuffle interval
 function stopShuffle() {
   clearInterval(shuffleInterval);
 }
 
+// Shuffle only numbers in cells that haven't been clicked yet
 function shuffleUnclickedNumbers() {
   const cells = Array.from(grid.children);
 
@@ -186,16 +184,19 @@ function shuffleUnclickedNumbers() {
   }
 }
 
+// Mute/unmute button toggler
 muteBtn.addEventListener('click', () => {
   isMuted = !isMuted;
   muteBtn.textContent = isMuted ? '🔇 Muted' : '🔊 Mute';
 });
 
+// Restart button reloads the game
 restartBtn.addEventListener('click', () => {
   restartBtn.disabled = true;
   initGame();
 });
 
+// Show and close instructions modal
 showInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'block';
 });
@@ -204,5 +205,5 @@ closeInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'none';
 });
 
-// Käynnistetään peli ensimmäisellä latauksella
+// Initialize the game on page load
 initGame();
