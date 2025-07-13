@@ -29,6 +29,11 @@ function initNumbers() {
 
 function createGrid() {
   grid.innerHTML = "";
+
+  // Calculate optimal column count based on total number of cells
+  const gridSize = Math.ceil(Math.sqrt(numbers.length));
+  grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+
   numbers.forEach(num => {
     const cell = document.createElement("div");
     cell.className = "cell";
