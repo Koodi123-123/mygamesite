@@ -3,42 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Number Click Game</title>
-  <!-- Link to external stylesheet -->
+  <title>Number Grid Click Game</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <h1>Number Grid Click Game</h1>
+  <p>Click the numbers from 1 to N in order as fast as possible.</p>
 
-  <!-- Page title -->
-  <h1>Number Click Game</h1>
-
-  <!-- Button to show the instructions modal -->
-  <button id="show-instructions-btn">Show Instructions</button>
-
-  <!-- Container for the number grid -->
   <div id="grid"></div>
 
-  <!-- Modal container for game instructions -->
-  <div id="instructions-modal" class="modal hidden">
+  <div id="timer">Time left: 60.00 s</div>
+  <div id="result"></div>
+
+  <!-- Controls container to hold buttons clearly -->
+  <div id="controls">
+    <button class="back-button" onclick="location.href='index.html'">Back to Home page</button>
+    <button id="mute-btn">🔊 Mute</button>
+    <button id="restart-btn">Restart Game</button>
+    <button id="show-instructions-btn">Instructions</button>
+  </div>
+
+  <!-- Modal for Instructions -->
+  <div id="instructions-modal" class="modal">
     <div class="modal-content">
+      <span id="close-instructions" class="close">&times;</span>
       <h2>Game Instructions</h2>
-      <!-- Game instructions text -->
       <p>
-        You must click numbers from 1 to N in order as fast as possible.<br>
-        The grid size starts with 25 numbers randomly placed.<br>
-        If you complete clicking all numbers within 60 seconds, you advance to the next level.<br>
-        Each next level increases the grid size by 5 numbers, making the game harder.<br>
-        If you fail to complete the level within time, the game ends and you can retry the current level.<br>
-        Your score depends on correct clicks (+10 points each) and wrong clicks (-5 points each).<br>
-        Your best time and score per level is saved and shown after each game.<br>
+        You must click numbers from 1 to N in order as fast as possible.<br/>
+        The grid size starts with 25 numbers randomly placed.<br/>
+        If you complete clicking all numbers within 60 seconds, you advance to the next level.<br/>
+        Each next level increases the grid size by 5 numbers, making the game harder.<br/>
+        If you fail to complete the level within time, the game ends and you can retry the current level.<br/>
+        Your score depends on correct clicks (+10 points each) and wrong clicks (-5 points each).<br/>
+        Your best time and score per level is saved and shown after each game.<br/>
         The numbers that you haven't clicked yet move randomly every 3 seconds, increasing the challenge.
       </p>
-      <!-- Button to close the instructions modal -->
-      <button id="close-instructions-btn">Close</button>
     </div>
   </div>
 
-  <!-- Link to external JavaScript file -->
   <script src="game.js"></script>
 </body>
 </html>
