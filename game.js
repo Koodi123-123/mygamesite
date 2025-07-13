@@ -7,6 +7,7 @@ const muteBtn = document.getElementById('mute-btn');
 const showInstructionsBtn = document.getElementById('show-instructions-btn');
 const instructionsModal = document.getElementById('instructions-modal');
 const closeInstructionsBtn = document.getElementById('close-instructions');
+const gameOverlay = document.getElementById('game-overlay'); // NEW overlay element
 
 let level = 1;
 let gridSize = 25;
@@ -38,6 +39,7 @@ function initGame() {
   stopTimer();
   stopShuffle();
   restartBtn.disabled = true; // Disable restart until game ends
+  gameOverlay.classList.add('hidden'); // Hide overlay when game starts
 }
 
 function setupGrid() {
@@ -139,7 +141,7 @@ function stopTimer() {
   clearInterval(timerInterval);
 }
 
-// Ends the game, shows message and either increments level or allows retry
+// Ends the game, shows message overlay and updates result stats
 function endGame(success) {
   stopTimer();
   stopShuffle();
@@ -147,20 +149,28 @@ function endGame(success) {
   restartBtn.disabled = false;
 
   if (success) {
+    gameOverlay.innerHTML = `<strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>`;
+    gameOverlay.classList.remove('hidden');
+
     resultDisplay.innerHTML = `
-      <strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>
       Final Score: ${score}<br/>
       Correct Clicks: ${correctClicks}<br/>
       Wrong Clicks: ${wrongClicks}
     `;
+
     level++;
 
-    // ✅ UUSI LISÄYS: Aloittaa seuraavan tason automaattisesti 3 sekunnin kuluttua
-    setTimeout(initGame, 3000);
+    // Automatically start next level after 3 seconds
+    setTimeout(() => {
+      gameOverlay.classList.add('hidden');
+      initGame();
+    }, 3000);
 
   } else {
+    gameOverlay.innerHTML = `<strong>⏱️ Time's up! Try again to reach next level.</strong><br/>`;
+    gameOverlay.classList.remove('hidden');
+
     resultDisplay.innerHTML = `
-      <strong>⏱️ Time's up! Try again to reach next level.</strong><br/>
       Final Score: ${score}<br/>
       Correct Clicks: ${correctClicks}<br/>
       Wrong Clicks: ${wrongClicks}
