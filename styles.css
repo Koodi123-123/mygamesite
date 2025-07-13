@@ -87,7 +87,6 @@ body.home .coming-soon {
 /* === NUMBER GRID GAME STYLES === */
 
 /* Grid container for numbers */
-/* Grid container */
 #grid {
   display: grid;
   gap: 10px;
@@ -109,7 +108,7 @@ body.home .coming-soon {
   border-radius: 8px;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.2s, transform 0.3s;
+  transition: background-color 0.2s;
 }
 
 /* Style for correctly clicked cells */
