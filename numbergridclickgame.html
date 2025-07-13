@@ -13,8 +13,11 @@
   <!-- Level display container -->
   <div id="level-display"></div>
 
-  <!-- Number grid container -->
-  <div id="grid"></div>
+  <!-- Number grid container with relative position -->
+  <div id="grid" style="position: relative;">
+    <!-- game overlay inside grid -->
+    <div id="game-overlay" class="hidden"></div>
+  </div>
 
   <!-- Timer display -->
   <div id="timer">Time left: 60.00 s</div>
@@ -47,8 +50,6 @@
       </p>
     </div>
   </div>
-  
-  <div id="game-overlay" class="hidden"></div>
 
   <script src="game.js?v=3"></script>
 </body>
