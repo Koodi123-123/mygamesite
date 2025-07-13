@@ -87,25 +87,25 @@ body.home .coming-soon {
 /* === NUMBER GRID GAME STYLES === */
 
 /* Grid container for numbers */
+/* Grid container */
 #grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); /* Ensures responsive column setup */
   gap: 10px;
-  max-width: 90vw;
   margin: 20px auto;
+  width: 100%;
+  max-width: 600px;
+  padding: 10px;
 }
 
-/* Each grid cell */
+/* Individual grid cell */
 .cell {
   background-color: #333;
   color: white;
   display: flex;
   justify-content: center;
   align-items: center;
-  aspect-ratio: 1 / 1; /* Ensures square shape */
-  font-size: 4vw;
-  min-width: 40px;
-  max-width: 60px;
+  aspect-ratio: 1 / 1; /* Keeps cells square */
+  font-size: clamp(16px, 4vw, 24px);
   border-radius: 8px;
   cursor: pointer;
   user-select: none;
