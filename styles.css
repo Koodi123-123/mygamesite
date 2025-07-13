@@ -1,199 +1,139 @@
-/* === GENERAL STYLES === */
 body {
-  background-color: #111;
-  color: white;
-  font-family: 'Segoe UI', sans-serif;
-  margin: 0;
+  background-color: #222;
+  color: #eee;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding: 20px;
-  text-align: center;
-}
-
-/* === PINK LOGO === */
-.logo {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #ff69b4;
-  margin-bottom: 20px;
-}
-
-/* === HOMEPAGE / INDEX.HTML === */
-body.home .container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  text-align: center;
-}
-
-body.home h1 {
-  font-size: 2.5rem;
-  color: #ffcc00;
-  margin-bottom: 20px;
-}
-
-body.home .intro {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-}
-
-body.home .game-list {
-  list-style: none;
-  padding: 0;
   margin: 0;
+  text-align: center;
 }
 
-body.home .game-list li {
-  margin: 15px 0;
+h1 {
+  margin-bottom: 10px;
 }
 
-body.home .game-list a {
-  display: inline-block;
-  padding: 12px 20px;
-  background-color: #ff69b4;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  transition: background-color 0.3s;
+#level-display {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #0f0;
 }
 
-body.home .game-list a:hover {
-  background-color: #e055a0;
-}
-
-body.home .coming-soon {
-  margin-top: 40px;
-  font-style: italic;
-  color: #ccc;
-  font-size: 1rem;
-}
-
-/* Responsive styles */
-@media (max-width: 480px) {
-  body.home h1 {
-    font-size: 2rem;
-  }
-
-  body.home .intro,
-  body.home .coming-soon {
-    font-size: 1rem;
-  }
-
-  body.home .game-list a {
-    font-size: 1rem;
-    padding: 10px 16px;
-  }
-}
-
-/* === NUMBER GRID GAME STYLES === */
-
-/* Grid container for numbers */
 #grid {
   display: grid;
-  gap: 10px;
+  gap: 6px;
   margin: 20px auto;
-  width: 100%;
   max-width: 600px;
-  padding: 10px;
+  user-select: none;
 }
 
-/* Individual grid cell */
 .cell {
   background-color: #333;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  aspect-ratio: 1 / 1; /* Keeps cells square */
-  font-size: clamp(16px, 4vw, 24px);
-  border-radius: 8px;
+  border-radius: 6px;
+  box-shadow: 0 0 8px #444 inset;
+  font-weight: bold;
+  font-size: 1.4em;
+  padding: 14px 10px;
+  text-align: center;
   cursor: pointer;
+  transition: background-color 0.3s ease;
   user-select: none;
-  transition: background-color 0.2s;
+  color: #eee;
+  border: 2px solid transparent;
 }
 
-/* Style for correctly clicked cells */
+.cell:hover {
+  background-color: #0a84ff;
+  border-color: #06f;
+}
+
 .cell.correct {
-  background-color: #4caf50;
-  color: white;
+  background-color: #2a8;
+  color: #cfc;
+  cursor: default;
+  border-color: #0c0;
+  box-shadow: 0 0 10px #0c0 inset;
 }
 
-/* Control button container */
+#timer {
+  margin-top: 10px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #fff;
+}
+
+#result {
+  margin-top: 15px;
+  font-size: 1.1em;
+  font-weight: 600;
+  min-height: 4em;
+}
+
 #controls {
   margin-top: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
 }
 
-/* Buttons styling */
-button, .back-button, #mute-btn {
-  background-color: #ff69b4;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 16px;
+button {
   cursor: pointer;
-  transition: background-color 0.3s;
-  min-width: 120px;
+  font-size: 1em;
+  padding: 10px 16px;
+  margin: 6px 6px 6px 0;
+  border-radius: 6px;
+  border: none;
+  background-color: #444;
+  color: #eee;
+  box-shadow: 0 3px 6px #111 inset;
+  transition: background-color 0.25s ease;
+  user-select: none;
 }
 
 button:hover {
-  background-color: #e055a0;
+  background-color: #0a84ff;
+  color: #fff;
 }
 
-/* Timer and result display styles */
-#timer, #result, #level {
-  margin-top: 15px;
-  font-size: 18px;
-  background-color: transparent;
+.back-button {
+  background-color: #666;
+  box-shadow: none;
 }
 
-/* Modal styles */
+.back-button:hover {
+  background-color: #555;
+}
+
 .modal {
-  display: none;
+  display: none; /* Hidden by default */
   position: fixed;
-  z-index: 1000;
+  z-index: 20;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgba(0,0,0,0.8);
+  background-color: rgba(0,0,0,0.75);
+  padding-top: 60px;
+  user-select: none;
 }
 
 .modal-content {
-  background-color: #222;
-  margin: 10% auto;
-  padding: 20px;
-  border-radius: 10px;
+  background-color: #333;
+  margin: auto;
+  padding: 20px 30px;
+  border: 1px solid #555;
   width: 90%;
-  max-width: 400px;
-  color: white;
+  max-width: 600px;
+  color: #eee;
+  border-radius: 12px;
   text-align: left;
 }
 
 .close {
-  color: #ddd;
+  color: #eee;
   float: right;
   font-size: 28px;
   font-weight: bold;
   cursor: pointer;
-  user-select: none;
-  position: relative;
-  z-index: 1001;
 }
 
 .close:hover {
-  color: white;
-}
-
-/* Animation for incorrect clicks */
-@keyframes shake {
-  0% { transform: translate(0); }
-  25% { transform: translate(-5px, 0); }
-  50% { transform: translate(5px, 0); }
-  75% { transform: translate(-5px, 0); }
-  100% { transform: translate(0); }
+  color: #0a84ff;
 }
