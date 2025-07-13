@@ -13,4 +13,39 @@
 
   <script>
     const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext
+    const ctx = canvas.getContext("2d");
+
+    let x = 200, y = 200;
+    const size = 20;
+    const step = 10;
+
+    function draw() {
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "lime";
+      ctx.fillRect(x - size / 2, y - size / 2, size, size);
+    }
+
+    window.addEventListener("keydown", (e) => {
+      switch (e.key) {
+        case "ArrowUp":
+          if (y - step - size / 2 >= 0) y -= step;
+          break;
+        case "ArrowDown":
+          if (y + step + size / 2 <= canvas.height) y += step;
+          break;
+        case "ArrowLeft":
+          if (x - step - size / 2 >= 0) x -= step;
+          break;
+        case "ArrowRight":
+          if (x + step + size / 2 <= canvas.width) x += step;
+          break;
+      }
+      draw();
+    });
+
+    draw();
+  </script>
+</body>
+</html>
