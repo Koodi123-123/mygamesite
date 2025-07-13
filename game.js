@@ -72,40 +72,31 @@ function stopTimer() {
 
 // Creates the grid cells only once
 function createGrid() {
-  grid.innerHTML = ''; // Clear grid just in case
+  grid.innerHTML = ''; // Clear grid
 
-  numbers.forEach(num => {
+  for (let i = 0; i < 25; i++) {
     const cell = document.createElement('div');
     cell.className = 'cell';
-    cell.textContent = num;
-    cell.dataset.number = num; // Store number in data attribute
 
-    // If this number was already clicked, mark it green
-    if (num < currentNumber) {
-      cell.classList.add('correct');
-    }
-
-    // Handle click on each cell
+    // Click handler:
     cell.addEventListener('click', () => {
-      // Start timer and movement only when first correct number is clicked
+      const num = parseInt(cell.dataset.number, 10);
+
       if (!startTime && num === 1) {
         startTimer();
         startMoving();
       }
 
       if (num === currentNumber) {
-        // Correct click
         cell.classList.add('correct');
         if (!isMuted) {
           clickSoundSuccess.currentTime = 0;
           clickSoundSuccess.play();
         }
-
         currentNumber++;
         updateScore();
 
         if (currentNumber > 25) {
-          // Game finished successfully
           stopTimer();
           stopMoving();
           const timeTaken = ((Date.now() - startTime) / 1000).toFixed(2);
@@ -116,7 +107,6 @@ function createGrid() {
           showBestTime();
         }
       } else if (num >= currentNumber) {
-        // Wrong click - penalize
         wrongClicks++;
         updateScore();
         if (!isMuted) {
@@ -125,25 +115,20 @@ function createGrid() {
         }
         animateFailure();
       }
-      // Clicking numbers less than currentNumber (already clicked) does nothing
+      // else do nothing if clicked number < currentNumber
     });
 
     grid.appendChild(cell);
-  });
+  }
 
-  // Position cells initially
-  positionCells();
+  positionCells(); // Päivitä heti numerot ja luokat
 }
 
 // Update score display based on correct and wrong clicks and speed
 function updateScore() {
-  // Simple formula: +10 points per correct click, -5 per wrong click
-  // Bonus: +1 point for every 0.1 second saved (fast clicks)
   if (!startTime) return;
 
-  const elapsed = (Date.now() - startTime) / 1000;
-  score = (currentNumber - 1) * 10 - wrongClicks * 5 + Math.max(0, Math.floor((25 - (currentNumber - 1)) * 1)); // Simplified bonus for remaining numbers
-  // Just show the score for now
+  score = (currentNumber - 1) * 10 - wrongClicks * 5 + Math.max(0, Math.floor((25 - (currentNumber - 1)) * 1));
   resultDisplay.textContent = `Score: ${score} | Wrong clicks: ${wrongClicks}`;
 }
 
@@ -151,14 +136,25 @@ function updateScore() {
 function positionCells() {
   const cells = document.querySelectorAll('.cell');
 
-  cells.forEach(cell => {
-    const num = parseInt(cell.dataset.number, 10);
-    const index = numbers.indexOf(num);
+  cells.forEach((cell, index) => {
+    const numberAtPos = numbers[index];
+
+    // Päivitä solun sisältö ja data-attribuutti
+    cell.textContent = numberAtPos;
+    cell.dataset.number = numberAtPos;
+
+    // Päivitä solun sijainti ruudukossa
     const row = Math.floor(index / 5) + 1;
     const col = (index % 5) + 1;
-
     cell.style.gridRowStart = row;
     cell.style.gridColumnStart = col;
+
+    // Päivitä luokka 'correct' jos numero on jo klikattu
+    if (numberAtPos < currentNumber) {
+      cell.classList.add('correct');
+    } else {
+      cell.classList.remove('correct');
+    }
   });
 }
 
@@ -195,7 +191,6 @@ function moveNumbers() {
 
 // Starts the interval that moves numbers every few seconds
 function startMoving() {
-  // Move numbers every 3 seconds (can adjust difficulty by changing interval)
   moveInterval = setInterval(() => {
     moveNumbers();
   }, 3000);
@@ -224,7 +219,6 @@ function showBestTime() {
 
 // Animate success (game finished)
 function animateSuccess() {
-  // Example: flash the background green a few times
   let flashes = 0;
   const maxFlashes = 6;
   const interval = setInterval(() => {
@@ -239,7 +233,6 @@ function animateSuccess() {
 
 // Animate failure (wrong click or timeout)
 function animateFailure() {
-  // Example: flash red background quickly
   let flashes = 0;
   const maxFlashes = 4;
   const interval = setInterval(() => {
@@ -260,7 +253,6 @@ muteBtn.addEventListener('click', () => {
 
 // Reset game state and start fresh game
 function resetGame() {
-  // Reset variables
   numbers = Array.from({ length: 25 }, (_, i) => i + 1);
   currentNumber = 1;
   wrongClicks = 0;
@@ -269,14 +261,11 @@ function resetGame() {
   resultDisplay.textContent = '';
   timerDisplay.textContent = `Time left: ${timeLimitSeconds}.00 s`;
 
-  // Clear intervals
   stopTimer();
   stopMoving();
 
-  // Create grid fresh
   createGrid();
 
-  // Show best time if any
   showBestTime();
 }
 
