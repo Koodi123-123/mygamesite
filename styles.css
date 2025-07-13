@@ -15,7 +15,7 @@ h1 {
   font-size: 1.3em;
   font-weight: bold;
   margin-bottom: 10px;
-  color: #ff69b4; /* pinkki */
+  color: #39FF14; /* green */
 }
 
 #grid {
@@ -47,7 +47,7 @@ h1 {
 }
 
 .cell.correct {
-  background-color: #ff69b4; /* pinkki */
+  background-color: #39FF14; /* green */
   color: #fff;
   cursor: default;
   border-color: #d15b9e;
