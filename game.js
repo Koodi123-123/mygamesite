@@ -44,6 +44,7 @@ function preloadSounds() {
     });
   });
 
+  // Aktivoi selaimen äänet käyttäjän ensimmäisestä klikkauksesta
   document.body.addEventListener('click', () => {
     [soundWrong, soundGameOver, soundLevelUp].forEach(snd => {
       snd.play().then(() => {
@@ -54,13 +55,30 @@ function preloadSounds() {
   }, { once: true });
 }
 
+// Päivitetty playSound-funktio, joka varmistaa äänen toiston paremmin
 function playSound(audio) {
   if (isMuted) return;
-  if (audio.readyState >= 2) {
-    audio.currentTime = 0;
-    audio.play().catch(err => {
-      console.warn('Aäänen toisto epäonnistui:', err);
-    });
+
+  try {
+    if (audio.readyState >= 2) {  // HAVE_CURRENT_DATA tai parempi
+      audio.pause();
+      audio.currentTime = 0;
+      audio.play().catch(err => {
+        console.warn('Äänen toisto epäonnistui:', err);
+      });
+    } else {
+      // Jos ääni ei ole valmis, yritä ladata ja toistaa kun valmis
+      audio.load();
+      audio.addEventListener('canplaythrough', () => {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.play().catch(err => {
+          console.warn('Äänen toisto epäonnistui canplaythrough-tapahtumassa:', err);
+        });
+      }, { once: true });
+    }
+  } catch (e) {
+    console.warn('Virhe playSound-funktiossa:', e);
   }
 }
 
@@ -80,6 +98,7 @@ function initGame() {
   stopTimer();
   stopShuffle();
   hideOverlay();
+  restartBtn.disabled = true; // Estä restart alussa
 }
 
 function setupGrid() {
@@ -132,6 +151,7 @@ function handleClick(cell) {
     gameStarted = true;
     startTimer();
     startShuffle();
+    restartBtn.disabled = false; // Käynnistä restart-nappi pelin alkaessa
   }
 
   if (!gameStarted) return;
@@ -193,6 +213,7 @@ function endGame(success) {
   stopTimer();
   stopShuffle();
   gameStarted = false;
+  restartBtn.disabled = false;
 
   if (!success) {
     playSound(soundGameOver);
