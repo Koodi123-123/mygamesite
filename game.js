@@ -92,6 +92,7 @@ function initGame() {
   score = 0;
   clickedNumbers.clear();
   resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
+  updateBestScore(); // Näytetään best score alussa myös
   timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
   gameStarted = false;
   setupGrid();
@@ -190,6 +191,28 @@ function flashBackground() {
 
 function updateResult() {
   resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
+  updateBestScore();
+}
+
+function updateBestScore() {
+  let bestScore = localStorage.getItem('bestScore');
+  bestScore = bestScore ? parseInt(bestScore, 10) : 0;
+
+  if (score > bestScore) {
+    bestScore = score;
+    localStorage.setItem('bestScore', bestScore);
+  }
+
+  // Näytetään paras tulos resultDisplayin alapuolella
+  let bestScoreEl = document.getElementById('best-score');
+  if (!bestScoreEl) {
+    bestScoreEl = document.createElement('div');
+    bestScoreEl.id = 'best-score';
+    bestScoreEl.style.marginTop = '6px';
+    bestScoreEl.style.fontWeight = 'bold';
+    resultDisplay.parentNode.insertBefore(bestScoreEl, resultDisplay.nextSibling);
+  }
+  bestScoreEl.textContent = `Best Score: ${bestScore}`;
 }
 
 function startTimer() {
@@ -232,6 +255,7 @@ function endGame(success) {
     Correct Clicks: ${correctClicks}<br/>
     Wrong Clicks: ${wrongClicks}
   `;
+  updateBestScore();
 }
 
 function showOverlay(message, showRestartBtn = false) {
@@ -239,7 +263,7 @@ function showOverlay(message, showRestartBtn = false) {
   overlay.innerHTML = `
     <div class="overlay-content">
       ${message}
-      ${showRestartBtn ? '<button id="restart-btn" class="restart-button">🔄 Restart</button>' : ''}
+      ${showRestartBtn ? '<button id="restart-btn" class="restart-button" style="background-color: #1DB954; color: white; border: none; padding: 10px 20px; font-size: 1.1em; border-radius: 5px; cursor: pointer;">🔄 Restart</button>' : ''}
     </div>
   `;
   overlay.classList.remove('hidden');
