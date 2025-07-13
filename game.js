@@ -39,7 +39,7 @@ function initGame() {
   stopTimer();
   stopShuffle();
   restartBtn.disabled = true; // Disable restart until game ends
-  gameOverlay.classList.add('hidden'); // Hide overlay when game starts
+  hideOverlay();  // Piilotetaan overlay pelin alkaessa
 }
 
 function setupGrid() {
@@ -149,8 +149,7 @@ function endGame(success) {
   restartBtn.disabled = false;
 
   if (success) {
-    gameOverlay.innerHTML = `<strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>`;
-    gameOverlay.classList.remove('hidden');
+    showOverlay(`<strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>`);
 
     resultDisplay.innerHTML = `
       Final Score: ${score}<br/>
@@ -162,13 +161,12 @@ function endGame(success) {
 
     // Automatically start next level after 3 seconds
     setTimeout(() => {
-      gameOverlay.classList.add('hidden');
+      hideOverlay();
       initGame();
     }, 3000);
 
   } else {
-    gameOverlay.innerHTML = `<strong>⏱️ Time's up! Try again to reach next level.</strong><br/>`;
-    gameOverlay.classList.remove('hidden');
+    showOverlay(`<strong>⏱️ Time's up! Try again to reach next level.</strong><br/>`);
 
     resultDisplay.innerHTML = `
       Final Score: ${score}<br/>
@@ -176,6 +174,19 @@ function endGame(success) {
       Wrong Clicks: ${wrongClicks}
     `;
   }
+}
+
+// Shows the overlay with given message and enables pointer-events to block clicks
+function showOverlay(message) {
+  gameOverlay.innerHTML = message;
+  gameOverlay.classList.remove('hidden');
+  gameOverlay.style.pointerEvents = 'auto';  // Block clicks on underlying grid/buttons
+}
+
+// Hides the overlay and disables pointer-events
+function hideOverlay() {
+  gameOverlay.classList.add('hidden');
+  gameOverlay.style.pointerEvents = 'none';
 }
 
 // Starts the interval that shuffles unclicked numbers every 6 seconds
@@ -217,6 +228,7 @@ muteBtn.addEventListener('click', () => {
 // Restart button reloads the game
 restartBtn.addEventListener('click', () => {
   restartBtn.disabled = true;
+  hideOverlay(); // Piilotetaan overlay kun uudelleenpeluu alkaa
   initGame();
 });
 
