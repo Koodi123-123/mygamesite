@@ -10,14 +10,19 @@
   <h1>Number Grid Click Game</h1>
   <p>Click the numbers from 1 to N in order as fast as possible.</p>
 
-  <div id="level-display"></div> <!-- Level display container -->
+  <!-- Level display container -->
+  <div id="level-display"></div>
 
+  <!-- Number grid container -->
   <div id="grid"></div>
 
+  <!-- Timer display -->
   <div id="timer">Time left: 60.00 s</div>
+
+  <!-- Result display for score and messages -->
   <div id="result"></div>
 
-  <!-- Controls container to hold buttons clearly -->
+  <!-- Controls container -->
   <div id="controls">
     <button class="back-button" onclick="location.href='index.html'">Back to Home page</button>
     <button id="mute-btn">🔊 Mute</button>
@@ -25,7 +30,7 @@
     <button id="show-instructions-btn">Instructions</button>
   </div>
 
-  <!-- Modal for Instructions -->
+  <!-- Modal for game instructions -->
   <div id="instructions-modal" class="modal">
     <div class="modal-content">
       <span id="close-instructions" class="close">&times;</span>
