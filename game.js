@@ -25,7 +25,6 @@ clickSound.volume = 0.3;  // Set volume lower for subtle sound
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    // Swap elements i and j
     [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
@@ -47,39 +46,33 @@ function stopTimer() {
 
 // Creates the clickable number grid dynamically
 function createGrid() {
-  shuffle(numbers);             // Shuffle the numbers array
-  grid.innerHTML = '';          // Clear previous grid if any
-  currentNumber = 1;            // Reset expected number
-  startTime = null;             // Reset timer start
-  timerDisplay.textContent = 'Time: 0.00 s';  // Reset timer display
-  resultDisplay.textContent = '';              // Clear previous result
+  shuffle(numbers);
+  grid.innerHTML = '';
+  currentNumber = 1;
+  startTime = null;
+  timerDisplay.textContent = 'Time: 0.00 s';
+  resultDisplay.textContent = '';
 
-  // Create each cell div with a number
   numbers.forEach(num => {
     const cell = document.createElement('div');
     cell.className = 'cell';
     cell.textContent = num;
 
-    // Add click event listener for each cell
     cell.addEventListener('click', () => {
-      // Start timer if first number clicked
       if (!startTime && num === 1) {
         startTimer();
       }
 
-      // If clicked number is the expected current number
       if (num === currentNumber) {
-        cell.classList.add('correct'); // Mark cell as correct (green)
+        cell.classList.add('correct');
 
-        // Play click sound if not muted
         if (!isMuted) {
-          clickSound.currentTime = 0;  // Reset sound to start
+          clickSound.currentTime = 0;
           clickSound.play();
         }
 
-        currentNumber++;  // Increase to expect next number
+        currentNumber++;
 
-        // If finished all numbers (past 25)
         if (currentNumber > 25) {
           stopTimer();
           const timeTaken = ((Date.now() - startTime) / 1000).toFixed(2);
@@ -88,9 +81,17 @@ function createGrid() {
       }
     });
 
-    // Append cell to the grid container
     grid.appendChild(cell);
   });
 }
 
-// Mute button toggles sound on/off and changes button text accordingly
+// Toggle mute on button click
+muteBtn.addEventListener('click', () => {
+  isMuted = !isMuted;
+  muteBtn.textContent = isMuted ? '🔇 Unmute' : '🔊 Mute';
+});
+
+// Start the game after HTML is fully loaded
+window.addEventListener('DOMContentLoaded', () => {
+  createGrid();
+});
