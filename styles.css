@@ -145,10 +145,7 @@ button:hover {
   color: #0a84ff;
 }
 
-/* New overlay for end game messages
-   Covers the entire grid area with a semi-transparent background,
-   centers the message text, and appears above all other content.
-*/
+/* Overlay covering the grid area only */
 #game-overlay {
   position: absolute;
   top: 0;
@@ -165,9 +162,19 @@ button:hover {
   text-align: center;
   padding: 1em;
   z-index: 1000; /* on top of grid */
-  pointer-events: none; /* allow clicks to pass through if needed */
+  pointer-events: none; /* allow clicks to pass through to buttons under overlay */
+  white-space: pre-line; /* allow line breaks */
 }
 
+/* Hide overlay by default */
 #game-overlay.hidden {
   display: none;
+}
+
+/* Responsive scaling for overlay text on smaller screens */
+@media (max-width: 480px) {
+  #game-overlay {
+    font-size: 1.2em;
+    padding: 0.8em;
+  }
 }
