@@ -4,128 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Number Click Game</title>
-  <style>
-    /* Perusbody */
-    body {
-      background-color: #222;
-      color: #eee;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 20px;
-      text-align: center;
-    }
-
-    /* Grid-tyyli korjattu */
-    #grid {
-      display: grid;
-      grid-template-columns: repeat(var(--grid-columns, 5), 1fr);
-      grid-gap: 10px;
-      max-width: 90vw;
-      margin: 20px auto;
-    }
-
-    /* Yksittäinen ruutu */
-    .cell {
-      background-color: #444;
-      border-radius: 8px;
-      padding: 20px 0;
-      font-size: 24px;
-      font-weight: bold;
-      cursor: pointer;
-      user-select: none;
-      color: #ff69b4;
-      box-shadow: 0 0 6px #ff69b4;
-      transition: background-color 0.3s, color 0.3s;
-    }
-    .cell.clicked {
-      background-color: #222;
-      color: #888;
-      cursor: default;
-      box-shadow: none;
-    }
-    .cell.wrong {
-      background-color: #b22;
-      color: white;
-      animation: shake 0.3s;
-    }
-
-    @keyframes shake {
-      0% { transform: translateX(0px); }
-      20% { transform: translateX(-5px); }
-      40% { transform: translateX(5px); }
-      60% { transform: translateX(-5px); }
-      80% { transform: translateX(5px); }
-      100% { transform: translateX(0px); }
-    }
-
-    /* Show Instructions -nappi */
-    #show-instructions-btn {
-      background-color: #ff69b4;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-bottom: 12px;
-    }
-    #show-instructions-btn:hover {
-      background-color: #e055a0;
-    }
-
-    /* Modal tausta */
-    .modal {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background-color: rgba(0,0,0,0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    .hidden {
-      display: none;
-    }
-    /* Modal sisältö */
-    .modal-content {
-      background-color: #222;
-      color: #eee;
-      padding: 20px 30px;
-      border-radius: 10px;
-      max-width: 90vw;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 0 15px #ff69b4;
-      text-align: left;
-    }
-
-    /* Modal sulje-nappi */
-    #close-instructions-btn {
-      margin-top: 15px;
-      background-color: #ff69b4;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    #close-instructions-btn:hover {
-      background-color: #e055a0;
-    }
-  </style>
+  <!-- Link to external stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
+  <!-- Page title -->
   <h1>Number Click Game</h1>
+
+  <!-- Button to show the instructions modal -->
   <button id="show-instructions-btn">Show Instructions</button>
 
+  <!-- Container for the number grid -->
   <div id="grid"></div>
 
-  <!-- Modal ohjeille -->
+  <!-- Modal container for game instructions -->
   <div id="instructions-modal" class="modal hidden">
     <div class="modal-content">
       <h2>Game Instructions</h2>
+      <!-- Game instructions text -->
       <p>
         You must click numbers from 1 to N in order as fast as possible.<br>
         The grid size starts with 25 numbers randomly placed.<br>
@@ -136,137 +33,12 @@
         Your best time and score per level is saved and shown after each game.<br>
         The numbers that you haven't clicked yet move randomly every 3 seconds, increasing the challenge.
       </p>
+      <!-- Button to close the instructions modal -->
       <button id="close-instructions-btn">Close</button>
     </div>
   </div>
 
-  <script>
-    // Variables for game logic
-    let gridSize = 25;
-    let nextNumber = 1;
-    let timer;
-    let timeLeft = 60;
-    let score = 0;
-    let moveInterval;
-    let numbers = [];
-    const grid = document.getElementById('grid');
-
-    // Calculate columns for grid (square root rounded up)
-    function setGridColumns(size) {
-      const columns = Math.ceil(Math.sqrt(size));
-      grid.style.setProperty('--grid-columns', columns);
-    }
-
-    // Create the grid with numbers 1 to gridSize randomly placed
-    function createGrid() {
-      grid.innerHTML = '';
-      numbers = [];
-
-      setGridColumns(gridSize);
-
-      // Create array 1..gridSize and shuffle it
-      const arr = Array.from({length: gridSize}, (_, i) => i + 1);
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-
-      for (let num of arr) {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.textContent = num;
-        cell.dataset.number = num;
-        cell.style.order = num; // order ei vaikuta gridiin, mutta jos halutaan
-        grid.appendChild(cell);
-        numbers.push(cell);
-      }
-    }
-
-    // Update timer text and handle time out
-    function startTimer() {
-      timeLeft = 60;
-      if(timer) clearInterval(timer);
-      timer = setInterval(() => {
-        timeLeft--;
-        if (timeLeft <= 0) {
-          clearInterval(timer);
-          clearInterval(moveInterval);
-          alert('Time\'s up! Game over.');
-          resetGame();
-        }
-      }, 1000);
-    }
-
-    // Move unclicked numbers randomly every 3 seconds
-    function startMoving() {
-      if(moveInterval) clearInterval(moveInterval);
-      moveInterval = setInterval(() => {
-        for (let cell of numbers) {
-          if (!cell.classList.contains('clicked')) {
-            cell.style.gridRowStart = Math.floor(Math.random() * Math.ceil(Math.sqrt(gridSize))) + 1;
-            cell.style.gridColumnStart = Math.floor(Math.random() * Math.ceil(Math.sqrt(gridSize))) + 1;
-          }
-        }
-      }, 3000);
-    }
-
-    // Reset game state and create new grid
-    function resetGame() {
-      nextNumber = 1;
-      score = 0;
-      createGrid();
-      startTimer();
-      startMoving();
-    }
-
-    // Handle click on grid numbers
-    grid.addEventListener('click', e => {
-      if (!e.target.classList.contains('cell')) return;
-      const clickedNum = parseInt(e.target.dataset.number);
-      if (clickedNum === nextNumber) {
-        e.target.classList.add('clicked');
-        score += 10;
-        nextNumber++;
-        if (nextNumber > gridSize) {
-          clearInterval(timer);
-          clearInterval(moveInterval);
-          alert('Level complete! Your score: ' + score);
-          // Next level setup
-          gridSize += 5;
-          resetGame();
-        }
-      } else {
-        // Wrong click
-        score -= 5;
-        e.target.classList.add('wrong');
-        setTimeout(() => e.target.classList.remove('wrong'), 500);
-      }
-    });
-
-    // Initialize game on page load
-    resetGame();
-
-    // Modal related code
-    const instructionsBtn = document.getElementById('show-instructions-btn');
-    const instructionsModal = document.getElementById('instructions-modal');
-    const closeInstructionsBtn = document.getElementById('close-instructions-btn');
-
-    function showInstructionsModal() {
-      instructionsModal.classList.remove('hidden');
-    }
-    function hideInstructionsModal() {
-      instructionsModal.classList.add('hidden');
-      localStorage.setItem('instructionsSeen', 'true');
-    }
-
-    instructionsBtn.addEventListener('click', showInstructionsModal);
-    closeInstructionsBtn.addEventListener('click', hideInstructionsModal);
-
-    window.addEventListener('load', () => {
-      if (!localStorage.getItem('instructionsSeen')) {
-        showInstructionsModal();
-      }
-    });
-  </script>
+  <!-- Link to external JavaScript file -->
+  <script src="game.js"></script>
 </body>
 </html>
