@@ -24,6 +24,7 @@ h1 {
   margin: 20px auto;
   max-width: 600px;
   user-select: none;
+  position: relative; /* Needed for overlay positioning */
 }
 
 .cell {
@@ -66,16 +67,16 @@ h1 {
   font-size: 1.1em;
   font-weight: 600;
   min-height: 4em;
-  white-space: pre-line; /* säilyttää rivinvaihdot hiirten jälkeen */
-  text-align: center;    /* keskitetty teksti */
+  white-space: pre-line; /* preserves line breaks after mouse actions */
+  text-align: center;    /* centered text */
 }
 
 #controls {
-  margin-top: 8px; /* aiemman 20px sijaan */
+  margin-top: 8px; /* reduced from previous 20px */
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 6px;        /* aiemman 10px sijaan */
+  gap: 6px;        /* reduced from previous 10px */
 }
 
 button {
@@ -85,7 +86,7 @@ button {
   margin: 6px 6px 6px 0;
   border-radius: 6px;
   border: none;
-  background-color: #ff69b4; /* pinkki */
+  background-color: #ff69b4; /* pink */
   color: #fff;
   box-shadow: 0 3px 6px #b34780 inset;
   transition: background-color 0.25s ease;
@@ -93,12 +94,12 @@ button {
 }
 
 button:hover {
-  background-color: #e055a0; /* tummempi pinkki hoverissa */
+  background-color: #e055a0; /* darker pink on hover */
   color: #fff;
 }
 
 .back-button {
-  background-color: #ff69b4; /* pinkki */
+  background-color: #ff69b4; /* pink */
   box-shadow: none;
 }
 
@@ -142,4 +143,31 @@ button:hover {
 
 .close:hover {
   color: #0a84ff;
+}
+
+/* New overlay for end game messages
+   Covers the entire grid area with a semi-transparent background,
+   centers the message text, and appears above all other content.
+*/
+#game-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75); /* semi-transparent black */
+  color: white;
+  font-size: 2em;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 1em;
+  z-index: 1000; /* on top of grid */
+  pointer-events: none; /* allow clicks to pass through if needed */
+}
+
+#game-overlay.hidden {
+  display: none;
 }
