@@ -1,183 +1,317 @@
-// --- Variables for game state ---
-// The current size of the grid (number of cells)
-let gridSize = 25;
-// The next number the player must click
-let nextNumber = 1;
-// Interval timer for countdown
-let timer;
-// Remaining time in seconds for the current level
-let timeLeft = 60;
-// Player's current score
-let score = 0;
-// Interval timer for moving numbers
-let moveInterval;
-// Array to hold all number cell DOM elements
-let numbers = [];
-// Reference to the grid container element
+// Get references to DOM elements
 const grid = document.getElementById('grid');
+const timerDisplay = document.getElementById('timer');
+const resultDisplay = document.getElementById('result');
+const muteBtn = document.getElementById('mute-btn');
+const restartBtn = document.getElementById('restart-btn');
+const showInstructionsBtn = document.getElementById('show-instructions-btn');
+const instructionsModal = document.getElementById('instructions-modal');
+const closeInstructions = document.getElementById('close-instructions');
 
-/**
- * Sets the CSS grid-template-columns property based on the grid size.
- * Uses square root rounded up to make the grid roughly square.
- * @param {number} size - The number of cells in the grid.
- */
-function setGridColumns(size) {
-  const columns = Math.ceil(Math.sqrt(size));
-  // Set CSS variable --grid-columns dynamically on the grid container
-  grid.style.setProperty('--grid-columns', columns);
+// Game variables and settings
+let currentLevel = 1; // Level starts at 1
+let numbers = [];
+let currentNumber = 1;
+let wrongClicks = 0;
+let score = 0;
+
+const baseGridSize = 25; // Initial grid size
+const levelIncrement = 5; // Numbers added each level
+
+const timeLimitSeconds = 60;
+
+let startTime = null;
+let timerInterval = null;
+let moveInterval = null;
+
+let isMuted = false;
+
+// Audio setup
+const clickSoundSuccess = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg');
+clickSoundSuccess.volume = 0.3;
+
+const clickSoundFail = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
+clickSoundFail.volume = 0.3;
+
+const clickSoundWin = new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg');
+clickSoundWin.volume = 0.3;
+
+// Fisher-Yates shuffle to randomize array
+function shuffle(array) {
+  for (let i = array.length -1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
 
-/**
- * Creates the grid with numbers from 1 to gridSize placed randomly.
- * Resets the grid HTML and internal numbers array.
- */
+// Initialize the grid with randomized numbers for the current level
+function initNumbers() {
+  const totalNumbers = baseGridSize + (currentLevel - 1) * levelIncrement;
+  numbers = Array.from({ length: totalNumbers }, (_, i) => i + 1);
+  shuffle(numbers);
+}
+
+// Create grid cells dynamically based on numbers array length
 function createGrid() {
-  grid.innerHTML = '';  // Clear existing cells
-  numbers = [];         // Reset numbers array
+  grid.innerHTML = ''; // Clear grid before creating cells
 
-  setGridColumns(gridSize);  // Adjust grid columns based on size
-
-  // Create array with numbers 1 to gridSize
-  const arr = Array.from({length: gridSize}, (_, i) => i + 1);
-
-  // Shuffle the array using Fisher-Yates algorithm
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-
-  // Create a cell element for each number in shuffled order
-  for (let num of arr) {
+  for (let i = 0; i < numbers.length; i++) {
     const cell = document.createElement('div');
     cell.className = 'cell';
-    cell.textContent = num;
-    cell.dataset.number = num; // Store number for click detection
+    cell.style.width = '60px';
+    cell.style.height = '60px';
+
+    // Attach click event
+    cell.addEventListener('click', () => handleCellClick(cell));
+
     grid.appendChild(cell);
-    numbers.push(cell);
   }
+
+  positionCells();
 }
 
-/**
- * Starts the countdown timer for the current level.
- * Updates timeLeft every second, ends game if time runs out.
- */
+// Position cells with numbers and styles
+function positionCells() {
+  const cells = grid.querySelectorAll('.cell');
+
+  // Ensure grid-template-columns matches the number of columns dynamically
+  // Calculate columns based on square root rounded up for approximate square grid
+  const cols = Math.ceil(Math.sqrt(numbers.length));
+  grid.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
+
+  cells.forEach((cell, index) => {
+    const numberAtPos = numbers[index];
+    cell.textContent = numberAtPos;
+    cell.dataset.number = numberAtPos;
+
+    // Mark cells as correct if number already clicked
+    if (numberAtPos < currentNumber) {
+      cell.classList.add('correct');
+      cell.style.cursor = 'default';
+    } else {
+      cell.classList.remove('correct');
+      cell.style.cursor = 'pointer';
+    }
+  });
+}
+
+// Handle cell click logic
+function handleCellClick(cell) {
+  const clickedNumber = parseInt(cell.dataset.number, 10);
+
+  // Start timer and moving numbers on first click on number 1
+  if (!startTime && clickedNumber === 1) {
+    startTimer();
+    startMoving();
+  }
+
+  // If clicked correct next number
+  if (clickedNumber === currentNumber) {
+    cell.classList.add('correct');
+    if (!isMuted) {
+      clickSoundSuccess.currentTime = 0;
+      clickSoundSuccess.play();
+    }
+    currentNumber++;
+    updateScore();
+
+    // Check if level completed
+    if (currentNumber > numbers.length) {
+      stopTimer();
+      stopMoving();
+
+      const timeTaken = ((Date.now() - startTime) / 1000).toFixed(2);
+      resultDisplay.textContent = `🎉 Level ${currentLevel} completed in ${timeTaken}s! Score: ${score}`;
+
+      if (!isMuted) clickSoundWin.play();
+
+      // Save best time and score
+      saveBestResult(currentLevel, timeTaken, score);
+
+      showBestResult(currentLevel);
+
+      // Advance to next level after short delay
+      setTimeout(() => {
+        currentLevel++;
+        resetGame();
+      }, 6000);
+    }
+  } else if (clickedNumber > currentNumber) {
+    // Wrong click - increment wrong clicks and feedback
+    wrongClicks++;
+    updateScore();
+    if (!isMuted) {
+      clickSoundFail.currentTime = 0;
+      clickSoundFail.play();
+    }
+    animateFailure();
+  }
+  // else ignore clicks on numbers less than currentNumber
+}
+
+// Update the score display
+function updateScore() {
+  if (!startTime) return;
+
+  score = (currentNumber -1) * 10 - wrongClicks * 5;
+  resultDisplay.textContent = `Score: ${score} | Wrong clicks: ${wrongClicks}`;
+}
+
+// Move numbers randomly except already clicked ones
+function moveNumbers() {
+  // Numbers not clicked yet
+  const movableNumbers = numbers.filter(num => num >= currentNumber);
+  shuffle(movableNumbers);
+
+  // Initialize new positions array with same length
+  let newPositions = new Array(numbers.length);
+
+  // Place already clicked numbers in original positions
+  for (let i = 0; i < numbers.length; i++) {
+    if (numbers[i] < currentNumber) {
+      newPositions[i] = numbers[i];
+    }
+  }
+
+  // Fill undefined slots with shuffled movable numbers
+  let movableIndex = 0;
+  for (let i = 0; i < newPositions.length; i++) {
+    if (newPositions[i] === undefined) {
+      newPositions[i] = movableNumbers[movableIndex];
+      movableIndex++;
+    }
+  }
+
+  numbers = newPositions;
+
+  positionCells();
+}
+
+// Start the countdown timer and update display every 50ms
 function startTimer() {
-  timeLeft = 60; // Reset to 60 seconds
-  if(timer) clearInterval(timer); // Clear any existing timer
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const remaining = (timeLimitSeconds - elapsed).toFixed(2);
+    timerDisplay.textContent = `Time left: ${remaining} s`;
 
-  timer = setInterval(() => {
-    timeLeft--;
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      clearInterval(moveInterval);
-      alert('Time\'s up! Game over.');
-      resetGame();
+    if (remaining <= 0) {
+      stopTimer();
+      stopMoving();
+      resultDisplay.textContent = `⏰ Time's up! Game Over. Your score: ${score}`;
+      disableGrid();
     }
-  }, 1000);
+  }, 50);
 }
 
-/**
- * Starts interval that moves unclicked number cells randomly every 3 seconds.
- * This increases game difficulty.
- */
+// Stop the timer interval
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+// Start interval that moves numbers every 3 seconds (adjustable)
 function startMoving() {
-  if(moveInterval) clearInterval(moveInterval); // Clear previous interval
-
-  moveInterval = setInterval(() => {
-    // Calculate max rows/columns from grid size (to keep in grid)
-    const maxPos = Math.ceil(Math.sqrt(gridSize));
-
-    // For each number cell not yet clicked, assign random grid row and column
-    for (let cell of numbers) {
-      if (!cell.classList.contains('clicked')) {
-        cell.style.gridRowStart = Math.floor(Math.random() * maxPos) + 1;
-        cell.style.gridColumnStart = Math.floor(Math.random() * maxPos) + 1;
-      }
-    }
-  }, 6000);
+  moveInterval = setInterval(moveNumbers, 3000);
 }
 
-/**
- * Resets the game state for a new level or retry.
- * Resets variables, creates new grid, and starts timers.
- */
+// Stop number moving interval
+function stopMoving() {
+  clearInterval(moveInterval);
+}
+
+// Disable all grid cells (after game over)
+function disableGrid() {
+  const cells = grid.querySelectorAll('.cell');
+  cells.forEach(cell => {
+    cell.style.pointerEvents = 'none';
+    cell.style.cursor = 'default';
+  });
+}
+
+// Reset and start new game or new level
 function resetGame() {
-  nextNumber = 1;
+  stopTimer();
+  stopMoving();
+
+  currentNumber = 1;
+  wrongClicks = 0;
   score = 0;
+  resultDisplay.textContent = '';
+  timerDisplay.textContent = `Time left: ${timeLimitSeconds}.00 s`;
+
+  initNumbers();
   createGrid();
-  startTimer();
-  startMoving();
+
+  // Enable all cells again
+  const cells = grid.querySelectorAll('.cell');
+  cells.forEach(cell => {
+    cell.style.pointerEvents = 'auto';
+  });
 }
 
-/**
- * Handles clicks on the grid cells.
- * Checks if clicked number matches the next required number.
- * Updates score and visual feedback accordingly.
- */
-grid.addEventListener('click', e => {
-  // Only respond if a cell was clicked
-  if (!e.target.classList.contains('cell')) return;
+// Animate failure feedback on wrong click
+function animateFailure() {
+  grid.style.animation = 'shake 0.3s';
+  setTimeout(() => {
+    grid.style.animation = '';
+  }, 300);
+}
 
-  const clickedNum = parseInt(e.target.dataset.number);
+// Save best time and score in localStorage
+function saveBestResult(level, time, score) {
+  const keyTime = `bestTime_level${level}`;
+  const keyScore = `bestScore_level${level}`;
 
-  if (clickedNum === nextNumber) {
-    // Correct click
-    e.target.classList.add('clicked');
-    score += 10;
-    nextNumber++;
+  const bestTime = localStorage.getItem(keyTime);
+  const bestScore = localStorage.getItem(keyScore);
 
-    // Check if level is complete
-    if (nextNumber > gridSize) {
-      clearInterval(timer);
-      clearInterval(moveInterval);
-      alert('Level complete! Your score: ' + score);
-      // Increase difficulty by increasing grid size by 5
-      gridSize += 5;
-      resetGame();
-    }
-  } else {
-    // Wrong click
-    score -= 5;
-    e.target.classList.add('wrong');       // Add red shake effect
-    setTimeout(() => e.target.classList.remove('wrong'), 500); // Remove effect after animation
+  if (!bestTime || time < parseFloat(bestTime)) {
+    localStorage.setItem(keyTime, time);
+  }
+  if (!bestScore || score > parseInt(bestScore)) {
+    localStorage.setItem(keyScore, score);
+  }
+}
+
+// Show best result under the grid
+function showBestResult(level) {
+  const bestTime = localStorage.getItem(`bestTime_level${level}`) || 'N/A';
+  const bestScore = localStorage.getItem(`bestScore_level${level}`) || 'N/A';
+
+  resultDisplay.textContent += ` | Best Time: ${bestTime}s | Best Score: ${bestScore}`;
+}
+
+// Toggle mute button sound
+muteBtn.addEventListener('click', () => {
+  isMuted = !isMuted;
+  muteBtn.textContent = isMuted ? '🔇 Unmute' : '🔊 Mute';
+});
+
+// Restart button resets game completely
+restartBtn.addEventListener('click', () => {
+  currentLevel = 1;
+  resetGame();
+});
+
+// Show instructions modal
+showInstructionsBtn.addEventListener('click', () => {
+  instructionsModal.style.display = 'block';
+});
+
+// Close modal on close button click
+closeInstructions.addEventListener('click', () => {
+  instructionsModal.style.display = 'none';
+});
+
+// Close modal when clicking outside modal content
+window.addEventListener('click', (e) => {
+  if (e.target === instructionsModal) {
+    instructionsModal.style.display = 'none';
   }
 });
 
-// --- Modal related code ---
-
-// Button to open instructions modal
-const instructionsBtn = document.getElementById('show-instructions-btn');
-// Modal container element
-const instructionsModal = document.getElementById('instructions-modal');
-// Button to close instructions modal
-const closeInstructionsBtn = document.getElementById('close-instructions-btn');
-
-/**
- * Shows the instructions modal by removing 'hidden' class
- */
-function showInstructionsModal() {
-  instructionsModal.classList.remove('hidden');
-}
-
-/**
- * Hides the instructions modal by adding 'hidden' class
- * Also stores in localStorage that user has seen instructions
- */
-function hideInstructionsModal() {
-  instructionsModal.classList.add('hidden');
-  localStorage.setItem('instructionsSeen', 'true');
-}
-
-// Event listeners for buttons
-instructionsBtn.addEventListener('click', showInstructionsModal);
-closeInstructionsBtn.addEventListener('click', hideInstructionsModal);
-
-// On page load, show instructions modal only if user hasn't seen it before
-window.addEventListener('load', () => {
-  if (!localStorage.getItem('instructionsSeen')) {
-    showInstructionsModal();
-  }
-});
-
-// Initialize the game on page load
-resetGame();
+// Initialize game on page load
+window.onload = () => {
+  resetGame();
+};
