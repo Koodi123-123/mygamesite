@@ -1,24 +1,49 @@
 <!DOCTYPE html>
+<!-- Declares the document type as HTML5 -->
+
 <html lang="en">
+<!-- Root element with language set to English -->
+
 <head>
   <meta charset="UTF-8" />
+  <!-- Sets character encoding to UTF-8 -->
+
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Makes page responsive by setting viewport width to device width and initial zoom to 1 -->
+
   <title>Number Grid Click Game</title>
+  <!-- Title shown in browser tab -->
+
   <link rel="stylesheet" href="styles.css" />
+  <!-- Links external CSS stylesheet -->
 </head>
+
 <body>
   <h1>Number Grid Click Game</h1>
+  <!-- Main heading -->
+
   <p>Click the numbers from 1 to 25 in order as fast as you can!</p>
+  <!-- Short instructions -->
 
   <div id="grid"></div>
+  <!-- Container where number grid cells will be dynamically inserted -->
+
   <div id="timer">Time: 0.00 s</div>
+  <!-- Displays the elapsed time -->
+
   <div id="result"></div>
+  <!-- Displays the final result text after finishing -->
 
   <div id="controls">
     <button class="back-button" onclick="location.href='index.html'">Back to Home page</button>
+    <!-- Button that navigates user back to the homepage -->
+
     <button id="mute-btn">🔊 Mute</button>
+    <!-- Button toggles sound mute/unmute -->
   </div>
 
   <script src="game.js"></script>
+  <!-- Links external JavaScript file that contains the game logic -->
 </body>
+
 </html>
