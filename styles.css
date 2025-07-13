@@ -143,3 +143,24 @@ a {
   font-size: 1.2em;
   margin-top: 15px;
 }
+
+/* Success animation for grid when game ends */
+@keyframes successFlash {
+  0%, 100% { background-color: #4caf50; }
+  50% { background-color: #81c784; }
+}
+
+#grid.success-animation {
+  animation: successFlash 1s ease-in-out 3;
+}
+
+/* Fail animation for wrong click on a cell */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.cell.fail-animation {
+  animation: shake 0.5s;
+}
