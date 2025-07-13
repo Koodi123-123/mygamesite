@@ -18,7 +18,7 @@ let timer = 60.0;
 let timerInterval = null;
 let shuffleInterval = null;
 let isMuted = false;
-let clickedNumbers = new Set();  // Tracks clicked cell positions
+let clickedNumbers = new Set();  // Tracks clicked cell positions (indexes)
 let gameStarted = false; // Tracks if timer & shuffle started
 
 function initGame() {
@@ -32,6 +32,7 @@ function initGame() {
   resultDisplay.textContent = '';
   timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
   gameStarted = false;  // Reset start flag
+  restartBtn.disabled = true; // Disable restart until game ends
   setupGrid();
   stopTimer();
   stopShuffle();
@@ -54,6 +55,9 @@ function setupGrid() {
     cell.textContent = numbers[i];
     cell.dataset.number = numbers[i];
     cell.dataset.position = i;
+
+    // Remove 'correct' class for new game
+    cell.classList.remove('correct');
 
     cell.addEventListener('click', () => handleClick(cell));
 
@@ -84,12 +88,14 @@ function handleClick(cell) {
   }
 
   if (number === nextNumber) {
-    cell.classList.add('correct');
-    clickedNumbers.add(cell.dataset.position);
-    nextNumber++;
-    correctClicks++;
-    if (nextNumber > gridSize) {
-      endGame(true);
+    if (!clickedNumbers.has(cell.dataset.position)) {
+      cell.classList.add('correct');
+      clickedNumbers.add(cell.dataset.position);
+      nextNumber++;
+      correctClicks++;
+      if (nextNumber > gridSize) {
+        endGame(true);
+      }
     }
   } else {
     wrongClicks++;
@@ -131,13 +137,14 @@ function endGame(success) {
   stopTimer();
   stopShuffle();
   gameStarted = false;
+  restartBtn.disabled = false; // Enable restart button when game ends
+
   if (success) {
     resultDisplay.textContent += ' - Level Completed! 🎉';
     level++;
   } else {
     resultDisplay.textContent += " - Time's up! Try again.";
   }
-  restartBtn.disabled = false;
 }
 
 function startShuffle() {
@@ -154,13 +161,16 @@ function stopShuffle() {
 function shuffleUnclickedNumbers() {
   const cells = Array.from(grid.children);
 
+  // Filter out clicked cells by position
   const unclickedCells = cells.filter(c => !clickedNumbers.has(c.dataset.position));
   if (unclickedCells.length <= 1) return;
 
+  // Get numbers only from unclicked cells
   const unclickedNumbers = unclickedCells.map(c => parseInt(c.dataset.number));
 
   shuffle(unclickedNumbers);
 
+  // Assign shuffled numbers back to unclicked cells ONLY (positions stay same)
   for (let i = 0; i < unclickedCells.length; i++) {
     unclickedCells[i].textContent = unclickedNumbers[i];
     unclickedCells[i].dataset.number = unclickedNumbers[i];
@@ -182,4 +192,10 @@ showInstructionsBtn.addEventListener('click', () => {
 });
 
 closeInstructionsBtn.addEventListener('click', () => {
-  instruct
+  instructionsModal.style.display = 'none';
+});
+
+// Initialize game on page load
+window.onload = () => {
+  initGame();
+};
