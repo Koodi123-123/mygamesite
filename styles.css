@@ -1,4 +1,4 @@
-/* === YLEISET TYYLIT === */
+/* === GENERAL STYLES === */
 body {
   background-color: #111;
   color: white;
@@ -8,7 +8,7 @@ body {
   text-align: center;
 }
 
-/* === PINKKI LOGO (käytä <div class="logo">GameSite</div>) === */
+/* === PINK LOGO === */
 .logo {
   font-size: 2.5rem;
   font-weight: bold;
@@ -16,7 +16,7 @@ body {
   margin-bottom: 20px;
 }
 
-/* === ETUSIVU / INDEX.HTML === */
+/* === HOMEPAGE / INDEX.HTML === */
 body.home .container {
   max-width: 600px;
   margin: 0 auto;
@@ -67,7 +67,7 @@ body.home .coming-soon {
   font-size: 1rem;
 }
 
-/* Responsiivisuus */
+/* Responsive styles */
 @media (max-width: 480px) {
   body.home h1 {
     font-size: 2rem;
@@ -84,16 +84,15 @@ body.home .coming-soon {
   }
 }
 
-
-/* === NUMBER GRID GAME TYYLIT (numbergridclickgame.html) === */
+/* === NUMBER GRID GAME STYLES === */
 
 /* Grid container for numbers */
 #grid {
   display: grid;
-  grid-gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); /* Ensures responsive column setup */
+  gap: 10px;
   max-width: 90vw;
   margin: 20px auto;
-  /* grid-template-columns set dynamically in JS */
 }
 
 /* Each grid cell */
@@ -103,7 +102,7 @@ body.home .coming-soon {
   display: flex;
   justify-content: center;
   align-items: center;
-  aspect-ratio: 1 / 1; /* Keep square */
+  aspect-ratio: 1 / 1; /* Ensures square shape */
   font-size: 4vw;
   min-width: 40px;
   max-width: 60px;
@@ -113,13 +112,13 @@ body.home .coming-soon {
   transition: background-color 0.2s, transform 0.3s;
 }
 
-/* Correctly clicked cell style */
+/* Style for correctly clicked cells */
 .cell.correct {
   background-color: #4caf50;
   color: white;
 }
 
-/* Controls area */
+/* Control button container */
 #controls {
   margin-top: 20px;
   display: flex;
@@ -145,14 +144,14 @@ button:hover {
   background-color: #e055a0;
 }
 
-/* Timer and result text */
+/* Timer and result display styles */
 #timer, #result, #level {
   margin-top: 15px;
   font-size: 18px;
   background-color: transparent;
 }
 
-/* Modal styling */
+/* Modal styles */
 .modal {
   display: none;
   position: fixed;
@@ -165,7 +164,6 @@ button:hover {
   background-color: rgba(0,0,0,0.8);
 }
 
-/* Modal content */
 .modal-content {
   background-color: #222;
   margin: 10% auto;
@@ -177,7 +175,6 @@ button:hover {
   text-align: left;
 }
 
-/* Close button for modal */
 .close {
   color: #ddd;
   float: right;
@@ -193,7 +190,7 @@ button:hover {
   color: white;
 }
 
-/* Animation for wrong clicks */
+/* Animation for incorrect clicks */
 @keyframes shake {
   0% { transform: translate(0); }
   25% { transform: translate(-5px, 0); }
