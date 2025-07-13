@@ -6,8 +6,7 @@ const muteButton = document.getElementById("mute-btn");
 const instructionsBtn = document.getElementById("show-instructions-btn");
 const instructionsModal = document.getElementById("instructions-modal");
 const closeInstructions = document.getElementById("close-instructions");
-
-const levelDisplay = document.getElementById("level-display"); // Now fetched from HTML
+const levelDisplay = document.getElementById("level-display");
 
 let numbers = [];
 let currentNumber = 1;
@@ -28,7 +27,6 @@ function initNumbers() {
 function createGrid() {
   grid.innerHTML = "";
 
-  // Calculate grid columns and rows to make square-ish layout
   const gridSize = Math.ceil(Math.sqrt(numbers.length));
   grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
 
@@ -37,7 +35,6 @@ function createGrid() {
     cell.className = "cell";
     cell.textContent = num;
     cell.dataset.number = num;
-    cell.style.transform = "";  // Reset transform so cells align in grid
     cell.addEventListener("click", handleCellClick);
     grid.appendChild(cell);
   });
@@ -114,46 +111,62 @@ function resetGame() {
   score = 0;
   resultDisplay.textContent = "";
   timerDisplay.textContent = `Time left: ${timeLimitSeconds}.00 s`;
-
   levelDisplay.textContent = `Level: ${currentLevel}`;
 
   initNumbers();
   createGrid();
-
-  const cells = grid.querySelectorAll(".cell");
-  cells.forEach(cell => {
-    cell.style.pointerEvents = "auto";
-    cell.style.transform = ""; // reset transform to keep grid clean
-  });
-
   startTimer();
   startMoving();
 }
 
 function moveNumbers() {
-  // Shuffle numbers of cells that have not yet been clicked (>= currentNumber)
-  const remainingCells = Array.from(grid.querySelectorAll(".cell")).filter(
-    cell => parseInt(cell.dataset.number, 10) >= currentNumber
+  const allCells = Array.from(grid.querySelectorAll(".cell"));
+
+  const correctCells = allCells.filter(cell =>
+    parseInt(cell.dataset.number, 10) < currentNumber
+  );
+  const activeCells = allCells.filter(cell =>
+    parseInt(cell.dataset.number, 10) >= currentNumber
   );
 
-  // Extract their numbers
-  const remainingNumbers = remainingCells.map(c => parseInt(c.dataset.number, 10));
-  // Shuffle the numbers
+  const remainingNumbers = activeCells.map(cell =>
+    parseInt(cell.dataset.number, 10)
+  );
+
+  // Shuffle
   for (let i = remainingNumbers.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [remainingNumbers[i], remainingNumbers[j]] = [remainingNumbers[j], remainingNumbers[i]];
   }
 
-  // Assign shuffled numbers back to cells
-  remainingCells.forEach((cell, idx) => {
-    cell.textContent = remainingNumbers[idx];
-    cell.dataset.number = remainingNumbers[idx];
+  grid.innerHTML = "";
+
+  const total = correctCells.length + remainingNumbers.length;
+  const gridSize = Math.ceil(Math.sqrt(total));
+  grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+
+  correctCells.forEach(cell => {
+    const newCell = document.createElement("div");
+    newCell.className = "cell correct";
+    newCell.textContent = cell.textContent;
+    newCell.dataset.number = cell.dataset.number;
+    newCell.style.pointerEvents = "none";
+    grid.appendChild(newCell);
+  });
+
+  remainingNumbers.forEach(num => {
+    const newCell = document.createElement("div");
+    newCell.className = "cell";
+    newCell.textContent = num;
+    newCell.dataset.number = num;
+    newCell.addEventListener("click", handleCellClick);
+    grid.appendChild(newCell);
   });
 }
 
 function startMoving() {
   stopMoving();
-  moveInterval = setInterval(moveNumbers, 6000); // Move every 6 seconds
+  moveInterval = setInterval(moveNumbers, 6000);
 }
 
 function stopMoving() {
@@ -190,5 +203,4 @@ window.addEventListener("click", (event) => {
   }
 });
 
-// Start the game on page load
 resetGame();
