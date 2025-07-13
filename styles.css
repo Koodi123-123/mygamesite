@@ -11,9 +11,9 @@ body {
 /* Grid container styling */
 #grid {
   display: grid;
-  grid-template-columns: repeat(5, 60px); /* 5 saraketta, kukin 60px leveä */
-  grid-gap: 10px; /* tila solujen välillä */
-  justify-content: center; /* keskitä ruudukko */
+  grid-template-columns: repeat(5, 60px);
+  grid-gap: 10px;
+  justify-content: center;
   max-width: 340px;
   margin: 20px auto;
 }
@@ -32,13 +32,45 @@ body {
   border-radius: 8px;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.3s;
 }
 
 /* Cell turns green when clicked correctly */
 .cell.correct {
   background-color: #4caf50;
   color: white;
+}
+
+/* Highlight next number with gold border */
+.cell[style*="border"] {
+  border: 2px solid #FFD700 !important;
+  font-weight: bold !important;
+}
+
+/* Error flash animation for wrong click */
+.cell.error {
+  background-color: #b00020 !important;
+  animation: flashRed 0.3s ease;
+}
+
+/* Result messages */
+.result-message.success {
+  color: #4caf50;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+.result-message.fail {
+  color: #b00020;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+/* Flash red keyframe */
+@keyframes flashRed {
+  0% { background-color: #b00020; }
+  50% { background-color: #333; }
+  100% { background-color: #b00020; }
 }
 
 /* All buttons styled with hot pink background and white text */
