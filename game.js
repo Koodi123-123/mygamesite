@@ -18,7 +18,7 @@ let timer = 60.0;
 let timerInterval = null;
 let shuffleInterval = null;
 let isMuted = false;
-let clickedNumbers = new Set();  // Tracks clicked cell positions (indexes)
+let clickedNumbers = new Set();  // Tracks clicked cell positions
 let gameStarted = false; // Tracks if timer & shuffle started
 
 function initGame() {
@@ -32,10 +32,11 @@ function initGame() {
   resultDisplay.textContent = '';
   timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
   gameStarted = false;  // Reset start flag
-  restartBtn.disabled = true; // Disable restart until game ends
+  restartBtn.disabled = true; // Estä restart alussa
   setupGrid();
   stopTimer();
   stopShuffle();
+  updateResult();
 }
 
 function setupGrid() {
@@ -55,9 +56,6 @@ function setupGrid() {
     cell.textContent = numbers[i];
     cell.dataset.number = numbers[i];
     cell.dataset.position = i;
-
-    // Remove 'correct' class for new game
-    cell.classList.remove('correct');
 
     cell.addEventListener('click', () => handleClick(cell));
 
@@ -88,33 +86,34 @@ function handleClick(cell) {
   }
 
   if (number === nextNumber) {
-    if (!clickedNumbers.has(cell.dataset.position)) {
-      cell.classList.add('correct');
-      clickedNumbers.add(cell.dataset.position);
-      nextNumber++;
-      correctClicks++;
-      if (nextNumber > gridSize) {
-        endGame(true);
-      }
+    cell.classList.add('correct');
+    clickedNumbers.add(cell.dataset.position);
+    nextNumber++;
+    correctClicks++;
+    updateResult();
+
+    if (nextNumber > gridSize) {
+      endGame(true);
     }
   } else {
     wrongClicks++;
+    updateResult();
     flashBackground();
   }
-  updateResult();
 }
 
 function flashBackground() {
   if (isMuted) return;
-  const originalColor = document.body.style.backgroundColor;
+  const originalColor = document.body.style.backgroundColor || '#222';
   document.body.style.backgroundColor = '#ff4c4c';
   setTimeout(() => {
-    document.body.style.backgroundColor = originalColor || '#222';
+    document.body.style.backgroundColor = originalColor;
   }, 200);
 }
 
 function updateResult() {
-  resultDisplay.textContent = `Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
+  const score = correctClicks * 10 - wrongClicks * 5;
+  resultDisplay.textContent = `Correct: ${correctClicks} | Wrong: ${wrongClicks} | Score: ${score}`;
 }
 
 function startTimer() {
@@ -137,13 +136,26 @@ function endGame(success) {
   stopTimer();
   stopShuffle();
   gameStarted = false;
-  restartBtn.disabled = false; // Enable restart button when game ends
+
+  const score = correctClicks * 10 - wrongClicks * 5;
 
   if (success) {
-    resultDisplay.textContent += ' - Level Completed! 🎉';
+    resultDisplay.textContent = `🎉 Congratulations! You completed Level ${level}!\n` +
+      `Score: ${score}\n` +
+      `Correct clicks: ${correctClicks} | Wrong clicks: ${wrongClicks}`;
     level++;
+    restartBtn.disabled = true; // Estetään restart, peli etenee automaattisesti
+
+    // Aloitetaan uusi taso pienen viiveen jälkeen
+    setTimeout(() => {
+      initGame();
+    }, 3000);
+
   } else {
-    resultDisplay.textContent += " - Time's up! Try again.";
+    resultDisplay.textContent = `⏰ Time's up! Try again to reach next level.\n` +
+      `Score: ${score}\n` +
+      `Correct clicks: ${correctClicks} | Wrong clicks: ${wrongClicks}`;
+    restartBtn.disabled = false; // Voidaan käynnistää uudelleen
   }
 }
 
@@ -161,16 +173,13 @@ function stopShuffle() {
 function shuffleUnclickedNumbers() {
   const cells = Array.from(grid.children);
 
-  // Filter out clicked cells by position
   const unclickedCells = cells.filter(c => !clickedNumbers.has(c.dataset.position));
   if (unclickedCells.length <= 1) return;
 
-  // Get numbers only from unclicked cells
   const unclickedNumbers = unclickedCells.map(c => parseInt(c.dataset.number));
 
   shuffle(unclickedNumbers);
 
-  // Assign shuffled numbers back to unclicked cells ONLY (positions stay same)
   for (let i = 0; i < unclickedCells.length; i++) {
     unclickedCells[i].textContent = unclickedNumbers[i];
     unclickedCells[i].dataset.number = unclickedNumbers[i];
@@ -195,7 +204,5 @@ closeInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'none';
 });
 
-// Initialize game on page load
-window.onload = () => {
-  initGame();
-};
+// Käynnistetään peli ensimmäisellä latauksella
+initGame();
