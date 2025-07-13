@@ -38,7 +38,7 @@ function initGame() {
   stopTimer();
   stopShuffle();
   restartBtn.disabled = true; // Disable restart until game ends
-  hideOverlay();  // Piilotetaan overlay pelin alkaessa
+  hideOverlay();  // Hide overlay when starting the game
 }
 
 function setupGrid() {
@@ -49,6 +49,7 @@ function setupGrid() {
 
   shuffle(numbers);
 
+  // Set grid columns based on square root of grid size (for layout)
   grid.style.gridTemplateColumns = `repeat(${Math.ceil(Math.sqrt(gridSize))}, 1fr)`;
   grid.innerHTML = '';
 
@@ -64,7 +65,7 @@ function setupGrid() {
     grid.appendChild(cell);
   }
 
-  // Lisää overlay takaisin gridin sisään, jos sitä ei ole olemassa
+  // Add overlay back to grid if it doesn't exist
   let overlay = document.getElementById('game-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -72,14 +73,14 @@ function setupGrid() {
     overlay.classList.add('hidden');
     grid.appendChild(overlay);
   } else {
-    // Jos overlay löytyy mutta ei ole gridin lapsi, lisää se takaisin
+    // If overlay exists but is not child of grid, add it back
     if (overlay.parentElement !== grid) {
       grid.appendChild(overlay);
     }
   }
 }
 
-// Sekoitusfunktio
+// Fisher-Yates shuffle algorithm for randomizing arrays
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -87,10 +88,11 @@ function shuffle(array) {
   }
 }
 
-// Käsittelee solun klikkauksen
+// Handles clicking a cell
 function handleClick(cell) {
   const number = parseInt(cell.dataset.number);
 
+  // Start the game timer and shuffle only after first correct click (number 1)
   if (!gameStarted && number === 1) {
     gameStarted = true;
     startTimer();
@@ -99,7 +101,7 @@ function handleClick(cell) {
   }
 
   if (!gameStarted) {
-    return;
+    return;  // Ignore clicks before game started
   }
 
   if (number === nextNumber) {
@@ -109,18 +111,18 @@ function handleClick(cell) {
     correctClicks++;
     score += 10;
     if (nextNumber > gridSize) {
-      endGame(true);
+      endGame(true);  // Player completed all numbers correctly
     }
   } else {
     wrongClicks++;
     score -= 5;
     if (score < 0) score = 0;
-    flashBackground();
+    flashBackground();  // Visual feedback for wrong click
   }
   updateResult();
 }
 
-// Välähdyseffektin tausta väärästä klikkauksesta (pois päältä, jos mykistetty)
+// Flashes background red on wrong click if not muted
 function flashBackground() {
   if (isMuted) return;
   const originalColor = document.body.style.backgroundColor;
@@ -130,30 +132,30 @@ function flashBackground() {
   }, 200);
 }
 
-// Päivittää piste- ja klikkaustiedot
+// Updates score and click counts display
 function updateResult() {
   resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
 }
 
-// Käynnistää ajastimen
+// Starts countdown timer
 function startTimer() {
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     timer -= 0.01;
     if (timer <= 0) {
       timer = 0;
-      endGame(false);
+      endGame(false);  // Time ran out
     }
     timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
   }, 10);
 }
 
-// Pysäyttää ajastimen
+// Stops the timer
 function stopTimer() {
   clearInterval(timerInterval);
 }
 
-// Lopettaa pelin, näyttää overlayn ja päivittää tulokset
+// Ends the game and shows overlay with results
 function endGame(success) {
   stopTimer();
   stopShuffle();
@@ -171,6 +173,7 @@ function endGame(success) {
 
     level++;
 
+    // Automatically start next level after 3 seconds
     setTimeout(() => {
       hideOverlay();
       initGame();
@@ -187,22 +190,22 @@ function endGame(success) {
   }
 }
 
-// Näyttää overlayn viestillä
+// Shows the overlay with a message
 function showOverlay(message) {
   const overlay = document.getElementById('game-overlay');
   overlay.innerHTML = message;
   overlay.classList.remove('hidden');
-  overlay.style.pointerEvents = 'auto';  // Estää klikkaukset alla
+  overlay.style.pointerEvents = 'auto';  // Prevent clicks passing through
 }
 
-// Piilottaa overlayn
+// Hides the overlay
 function hideOverlay() {
   const overlay = document.getElementById('game-overlay');
   overlay.classList.add('hidden');
   overlay.style.pointerEvents = 'none';
 }
 
-// Käynnistää sekoitusintervallin
+// Starts the shuffle interval for unclicked numbers every 6 seconds
 function startShuffle() {
   clearInterval(shuffleInterval);
   shuffleInterval = setInterval(() => {
@@ -210,42 +213,48 @@ function startShuffle() {
   }, 6000);
 }
 
-// Pysäyttää sekoitusintervallin
+// Stops the shuffle interval
 function stopShuffle() {
   clearInterval(shuffleInterval);
 }
 
-// Sekoittaa klikkaamattomat numerot ruudukossa
+// *** Fixed shuffle function that only considers .cell elements that are unclicked ***
 function shuffleUnclickedNumbers() {
   const cells = Array.from(grid.children);
+  // Filter only cells with class 'cell' and with dataset.position, excluding clicked ones
+  const unclickedCells = cells.filter(c => c.classList.contains('cell') && c.dataset.position !== undefined && !clickedNumbers.has(c.dataset.position));
 
-  const unclickedCells = cells.filter(c => !clickedNumbers.has(c.dataset.position));
-  if (unclickedCells.length <= 1) return;
+  if (unclickedCells.length <= 1) return; // No point shuffling if 0 or 1 cells left
 
+  // Extract the numbers of unclicked cells
   const unclickedNumbers = unclickedCells.map(c => parseInt(c.dataset.number));
 
   shuffle(unclickedNumbers);
 
+  // Reassign shuffled numbers back to the unclicked cells
   for (let i = 0; i < unclickedCells.length; i++) {
-    unclickedCells[i].textContent = unclickedNumbers[i];
-    unclickedCells[i].dataset.number = unclickedNumbers[i];
+    const num = unclickedNumbers[i];
+    if (!isNaN(num)) {
+      unclickedCells[i].textContent = num;
+      unclickedCells[i].dataset.number = num;
+    }
   }
 }
 
-// Mute-painike togglaa äänen
+// Mute button toggles sound effects
 muteBtn.addEventListener('click', () => {
   isMuted = !isMuted;
   muteBtn.textContent = isMuted ? '🔇 Muted' : '🔊 Mute';
 });
 
-// Restart-painike käynnistää pelin uudelleen
+// Restart button restarts the game
 restartBtn.addEventListener('click', () => {
   restartBtn.disabled = true;
   hideOverlay();
   initGame();
 });
 
-// Ohjeiden näyttö ja piilotus
+// Instructions modal show/hide handlers
 showInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'block';
 });
@@ -254,5 +263,5 @@ closeInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'none';
 });
 
-// Aloita peli sivun latautuessa
+// Initialize the game when the page loads
 initGame();
