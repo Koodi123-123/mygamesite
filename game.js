@@ -49,11 +49,16 @@ function handleCellClick(e) {
     currentNumber++;
     score += 10;
 
-    if (currentNumber > numbers.length) {
+    // Korjattu kohta: tarkistetaan että kaikki solut on klikattu
+    const unclickedCells = Array.from(grid.querySelectorAll(".cell"))
+      .filter(cell => !cell.classList.contains("correct"));
+
+    if (unclickedCells.length === 0) {
       stopTimer();
       stopMoving();
       showResult(true);
     }
+
   } else {
     wrongClicks++;
     score -= 5;
