@@ -1,12 +1,91 @@
-/* Body & general styling */
+/* === YLEISET TYYLIT === */
 body {
   background-color: #111;
   color: white;
-  font-family: sans-serif;
-  text-align: center;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
   padding: 20px;
+  text-align: center;
+}
+
+/* === PINKKI LOGO (käytä <div class="logo">GameSite</div>) === */
+.logo {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #ff69b4;
+  margin-bottom: 20px;
+}
+
+/* === ETUSIVU / INDEX.HTML === */
+body.home .container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+body.home h1 {
+  font-size: 2.5rem;
+  color: #ffcc00;
+  margin-bottom: 20px;
+}
+
+body.home .intro {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+body.home .game-list {
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
+
+body.home .game-list li {
+  margin: 15px 0;
+}
+
+body.home .game-list a {
+  display: inline-block;
+  padding: 12px 20px;
+  background-color: #ff69b4;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  transition: background-color 0.3s;
+}
+
+body.home .game-list a:hover {
+  background-color: #e055a0;
+}
+
+body.home .coming-soon {
+  margin-top: 40px;
+  font-style: italic;
+  color: #ccc;
+  font-size: 1rem;
+}
+
+/* Responsiivisuus */
+@media (max-width: 480px) {
+  body.home h1 {
+    font-size: 2rem;
+  }
+
+  body.home .intro,
+  body.home .coming-soon {
+    font-size: 1rem;
+  }
+
+  body.home .game-list a {
+    font-size: 1rem;
+    padding: 10px 16px;
+  }
+}
+
+
+/* === NUMBER GRID GAME TYYLIT (numbergridclickgame.html) === */
 
 /* Grid container for numbers */
 #grid {
@@ -62,13 +141,12 @@ button, .back-button, #mute-btn {
   min-width: 120px;
 }
 
-/* Button hover */
 button:hover {
   background-color: #e055a0;
 }
 
 /* Timer and result text */
-#timer, #result {
+#timer, #result, #level {
   margin-top: 15px;
   font-size: 18px;
   background-color: transparent;
@@ -76,14 +154,14 @@ button:hover {
 
 /* Modal styling */
 .modal {
-  display: none; /* Hidden by default */
+  display: none;
   position: fixed;
   z-index: 1000;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  overflow: auto; /* enable scroll */
+  overflow: auto;
   background-color: rgba(0,0,0,0.8);
 }
 
