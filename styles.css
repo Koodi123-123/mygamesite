@@ -11,11 +11,10 @@ body {
 /* Grid container for numbers */
 #grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); /* responsive grid */
   grid-gap: 10px;
-  max-width: 100%;      /* Allow grid to expand */
+  max-width: 90vw;
   margin: 20px auto;
-  width: max-content;   /* width fits the content */
+  /* grid-template-columns set dynamically in JS */
 }
 
 /* Each grid cell */
@@ -25,9 +24,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 60px;
-  height: 60px;
-  font-size: 20px;
+  aspect-ratio: 1 / 1; /* Keep square */
+  font-size: 4vw;
+  min-width: 40px;
+  max-width: 60px;
   border-radius: 8px;
   cursor: pointer;
   user-select: none;
@@ -97,7 +97,6 @@ button:hover {
   max-width: 400px;
   color: white;
   text-align: left;
-  line-height: 1.5;  /* improved readability */
 }
 
 /* Close button for modal */
@@ -108,10 +107,19 @@ button:hover {
   font-weight: bold;
   cursor: pointer;
   user-select: none;
-  z-index: 1001; /* above modal content */
   position: relative;
+  z-index: 1001;
 }
 
 .close:hover {
   color: white;
+}
+
+/* Animation for wrong clicks */
+@keyframes shake {
+  0% { transform: translate(0); }
+  25% { transform: translate(-5px, 0); }
+  50% { transform: translate(5px, 0); }
+  75% { transform: translate(-5px, 0); }
+  100% { transform: translate(0); }
 }
