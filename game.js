@@ -1,122 +1,125 @@
-const grid = document.getElementById("grid");
-const levelDisplay = document.getElementById("level-display");
-const timerDisplay = document.getElementById("timer");
-const resultDisplay = document.getElementById("result");
-const restartBtn = document.getElementById("restart-btn");
-const muteBtn = document.getElementById("mute-btn");
-const showInstructionsBtn = document.getElementById("show-instructions-btn");
-const instructionsModal = document.getElementById("instructions-modal");
-const closeInstructions = document.getElementById("close-instructions");
+const grid = document.getElementById('grid');
+const levelDisplay = document.getElementById('level-display');
+const timerDisplay = document.getElementById('timer');
+const resultDisplay = document.getElementById('result');
+const restartBtn = document.getElementById('restart-btn');
+const muteBtn = document.getElementById('mute-btn');
+const showInstructionsBtn = document.getElementById('show-instructions-btn');
+const instructionsModal = document.getElementById('instructions-modal');
+const closeInstructionsBtn = document.getElementById('close-instructions');
 
-let numbers = [];
-let currentNumber = 1;
 let level = 1;
-let score = 0;
-let timeLeft = 60;
+let gridSize = 25;
+let numbers = [];
+let correctClicks = 0;
+let wrongClicks = 0;
+let nextNumber = 1;
+let timer = 60.0;
 let timerInterval = null;
-let moveInterval = null;
+let shuffleInterval = null;
 let isMuted = false;
-let cellPositions = {}; // Store positions {number: {row, col}}
+let clickedNumbers = new Set();  // Tracks clicked cell positions
+let gameStarted = false; // Tracks if timer & shuffle started
 
-// Initialize game
 function initGame() {
-  currentNumber = 1;
-  score = 0;
-  timeLeft = 60;
-  numbers = [];
+  levelDisplay.textContent = `Level ${level}`;
+  gridSize = 25 + (level - 1) * 5;
+  nextNumber = 1;
+  correctClicks = 0;
+  wrongClicks = 0;
+  timer = 60.0;
+  clickedNumbers.clear();
+  resultDisplay.textContent = '';
+  timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
+  gameStarted = false;  // Reset start flag
+  setupGrid();
+  stopTimer();
+  stopShuffle();
+}
 
-  const count = 25 + (level - 1) * 5;
-  for (let i = 1; i <= count; i++) {
+function setupGrid() {
+  numbers = [];
+  for (let i = 1; i <= gridSize; i++) {
     numbers.push(i);
   }
 
-  levelDisplay.textContent = `Level: ${level}`;
-  resultDisplay.textContent = "";
-  updateTimerDisplay();
+  shuffle(numbers);
 
-  createGrid();
-  startTimer();
-  startMoveInterval();
-}
+  grid.style.gridTemplateColumns = `repeat(${Math.ceil(Math.sqrt(gridSize))}, 1fr)`;
+  grid.innerHTML = '';
 
-// Create grid and randomly place numbers
-function createGrid() {
-  grid.innerHTML = "";
-  cellPositions = {};
+  for (let i = 0; i < numbers.length; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.textContent = numbers[i];
+    cell.dataset.number = numbers[i];
+    cell.dataset.position = i;
 
-  const gridSize = Math.ceil(Math.sqrt(numbers.length));
-  grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-
-  const positions = [];
-  for (let r = 0; r < gridSize; r++) {
-    for (let c = 0; c < gridSize; c++) {
-      positions.push({ row: r, col: c });
-    }
-  }
-  // Shuffle positions
-  positions.sort(() => Math.random() - 0.5);
-
-  numbers.forEach((num, index) => {
-    const pos = positions[index];
-    cellPositions[num] = pos;
-
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    cell.textContent = num;
-    cell.dataset.number = num;
-    cell.style.gridRowStart = pos.row + 1;
-    cell.style.gridColumnStart = pos.col + 1;
-    cell.addEventListener("click", handleCellClick);
+    cell.addEventListener('click', () => handleClick(cell));
 
     grid.appendChild(cell);
-  });
-}
-
-function handleCellClick(e) {
-  const cell = e.target;
-  const num = parseInt(cell.dataset.number, 10);
-
-  if (num === currentNumber) {
-    cell.classList.add("correct");
-    cell.style.pointerEvents = "none";
-    currentNumber++;
-    score += 10;
-    resultDisplay.textContent = `Score: ${score}`;
-
-    if (currentNumber > numbers.length) {
-      // Level completed
-      stopTimer();
-      stopMoveInterval();
-      resultDisplay.textContent = `Level ${level} completed! Your score: ${score}`;
-      level++;
-      setTimeout(() => {
-        initGame();
-      }, 3000);
-    }
-  } else {
-    // Wrong click
-    score -= 5;
-    resultDisplay.textContent = `Wrong click! Score: ${score}`;
   }
 }
 
-function updateTimerDisplay() {
-  timerDisplay.textContent = `Time left: ${timeLeft.toFixed(2)} s`;
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function handleClick(cell) {
+  const number = parseInt(cell.dataset.number);
+
+  if (!gameStarted && number === 1) {
+    // Start timer and shuffle when first number clicked
+    gameStarted = true;
+    startTimer();
+    startShuffle();
+  }
+
+  if (!gameStarted) {
+    // Ignore clicks if game not started and number !=1
+    return;
+  }
+
+  if (number === nextNumber) {
+    cell.classList.add('correct');
+    clickedNumbers.add(cell.dataset.position);
+    nextNumber++;
+    correctClicks++;
+    if (nextNumber > gridSize) {
+      endGame(true);
+    }
+  } else {
+    wrongClicks++;
+    flashBackground();
+  }
+  updateResult();
+}
+
+function flashBackground() {
+  if (isMuted) return;
+  const originalColor = document.body.style.backgroundColor;
+  document.body.style.backgroundColor = '#ff4c4c';
+  setTimeout(() => {
+    document.body.style.backgroundColor = originalColor || '#222';
+  }, 200);
+}
+
+function updateResult() {
+  resultDisplay.textContent = `Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
 }
 
 function startTimer() {
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
-    timeLeft -= 0.01;
-    if (timeLeft <= 0) {
-      timeLeft = 0;
-      updateTimerDisplay();
-      stopTimer();
-      stopMoveInterval();
-      resultDisplay.textContent = `Time's up! Your score: ${score}`;
-    } else {
-      updateTimerDisplay();
+    timer -= 0.01;
+    if (timer <= 0) {
+      timer = 0;
+      endGame(false);
     }
+    timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
   }, 10);
 }
 
@@ -124,114 +127,59 @@ function stopTimer() {
   clearInterval(timerInterval);
 }
 
-function startMoveInterval() {
-  clearInterval(moveInterval);
-  moveInterval = setInterval(() => {
-    moveNumbers();
+function endGame(success) {
+  stopTimer();
+  stopShuffle();
+  gameStarted = false;
+  if (success) {
+    resultDisplay.textContent += ' - Level Completed! 🎉';
+    level++;
+  } else {
+    resultDisplay.textContent += " - Time's up! Try again.";
+  }
+  restartBtn.disabled = false;
+}
+
+function startShuffle() {
+  clearInterval(shuffleInterval);
+  shuffleInterval = setInterval(() => {
+    shuffleUnclickedNumbers();
   }, 6000);
 }
 
-function stopMoveInterval() {
-  clearInterval(moveInterval);
+function stopShuffle() {
+  clearInterval(shuffleInterval);
 }
 
-// Move only unclicked numbers to new random positions; clicked numbers stay fixed
-function moveNumbers() {
-  const gridSize = Math.ceil(Math.sqrt(numbers.length));
-  grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+function shuffleUnclickedNumbers() {
+  const cells = Array.from(grid.children);
 
-  const allCells = Array.from(grid.querySelectorAll(".cell"));
+  const unclickedCells = cells.filter(c => !clickedNumbers.has(c.dataset.position));
+  if (unclickedCells.length <= 1) return;
 
-  // Separate clicked and unclicked cells
-  const clickedNumbers = allCells
-    .filter(cell => cell.classList.contains("correct"))
-    .map(cell => parseInt(cell.dataset.number, 10));
+  const unclickedNumbers = unclickedCells.map(c => parseInt(c.dataset.number));
 
-  const unclickedCells = allCells
-    .filter(cell => !cell.classList.contains("correct"));
+  shuffle(unclickedNumbers);
 
-  // All possible positions
-  const allPositions = [];
-  for (let r = 0; r < gridSize; r++) {
-    for (let c = 0; c < gridSize; c++) {
-      allPositions.push({ row: r, col: c });
-    }
+  for (let i = 0; i < unclickedCells.length; i++) {
+    unclickedCells[i].textContent = unclickedNumbers[i];
+    unclickedCells[i].dataset.number = unclickedNumbers[i];
   }
-
-  // Remove positions occupied by clicked numbers
-  const usedPositions = clickedNumbers.map(num => cellPositions[num]);
-  const availablePositions = allPositions.filter(pos =>
-    !usedPositions.some(up => up.row === pos.row && up.col === pos.col)
-  );
-
-  // Shuffle available positions
-  availablePositions.sort(() => Math.random() - 0.5);
-
-  // Assign new positions to unclicked numbers
-  unclickedCells.forEach((cell, i) => {
-    const num = parseInt(cell.dataset.number, 10);
-    const newPos = availablePositions[i];
-    cellPositions[num] = newPos;
-  });
-
-  // Clear grid and rebuild with updated positions
-  grid.innerHTML = "";
-
-  // Add clicked cells back at fixed positions
-  clickedNumbers.forEach(num => {
-    const pos = cellPositions[num];
-    const cell = document.createElement("div");
-    cell.className = "cell correct";
-    cell.textContent = num;
-    cell.dataset.number = num;
-    cell.style.gridRowStart = pos.row + 1;
-    cell.style.gridColumnStart = pos.col + 1;
-    cell.style.pointerEvents = "none";
-    grid.appendChild(cell);
-  });
-
-  // Add unclicked cells with new positions
-  unclickedCells.forEach(cell => {
-    const num = parseInt(cell.dataset.number, 10);
-    const pos = cellPositions[num];
-    const newCell = document.createElement("div");
-    newCell.className = "cell";
-    newCell.textContent = num;
-    newCell.dataset.number = num;
-    newCell.style.gridRowStart = pos.row + 1;
-    newCell.style.gridColumnStart = pos.col + 1;
-    newCell.addEventListener("click", handleCellClick);
-    grid.appendChild(newCell);
-  });
 }
 
-// Restart button handler
-restartBtn.addEventListener("click", () => {
-  stopTimer();
-  stopMoveInterval();
+muteBtn.addEventListener('click', () => {
+  isMuted = !isMuted;
+  muteBtn.textContent = isMuted ? '🔇 Muted' : '🔊 Mute';
+});
+
+restartBtn.addEventListener('click', () => {
+  restartBtn.disabled = true;
   initGame();
 });
 
-// Instructions modal handlers
-showInstructionsBtn.addEventListener("click", () => {
-  instructionsModal.style.display = "block";
+showInstructionsBtn.addEventListener('click', () => {
+  instructionsModal.style.display = 'block';
 });
 
-closeInstructions.addEventListener("click", () => {
-  instructionsModal.style.display = "none";
-});
-
-window.addEventListener("click", (e) => {
-  if (e.target === instructionsModal) {
-    instructionsModal.style.display = "none";
-  }
-});
-
-// Mute button placeholder (no sound logic implemented here)
-muteBtn.addEventListener("click", () => {
-  isMuted = !isMuted;
-  muteBtn.textContent = isMuted ? "🔇 Muted" : "🔊 Mute";
-});
-
-// Start game on load
-initGame();
+closeInstructionsBtn.addEventListener('click', () => {
+  instruct
