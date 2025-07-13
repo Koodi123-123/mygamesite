@@ -1,3 +1,15 @@
+/*!
+ * Number Grid Click Game - game.js
+ * 
+ * Copyright (c) 2025 Koodi123-123
+ * 
+ * Licensed under the MIT License.
+ * You may use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of this software under the conditions of the MIT License.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+ */
+
 const grid = document.getElementById('grid');
 const levelDisplay = document.getElementById('level-display');
 const timerDisplay = document.getElementById('timer');
