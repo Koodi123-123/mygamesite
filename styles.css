@@ -1,46 +1,92 @@
-/* Responsive grid: grid-template-columns skaalautuu pienemmillä näytöillä */
-#grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-  grid-gap: 10px;
-  justify-content: center;
-  margin-top: 20px;
-  max-width: 350px;
-  width: 90vw;
+/* Body styling: dark background, white text, sans-serif font, center aligned, padding and no margin */
+body {
+  background-color: #111;       /* Very dark gray background */
+  color: white;                 /* White text for contrast */
+  font-family: sans-serif;      /* Clean sans-serif font */
+  text-align: center;           /* Center all text */
+  padding: 20px;                /* Inner spacing */
+  margin: 0;                   /* No default margin */
 }
 
-/* Solujen skaalautuva neliö */
-.cell {
-  background-color: #222;
-  border: 2px solid white;
+/* Link styling */
+a {
+  color: #0f0;                 /* Bright green links */
+  text-decoration: none;       /* No underline */
+  font-size: 20px;             /* Larger clickable area */
+}
+
+/* List styles for other pages (not directly used here) */
+ul {
+  list-style: none;            /* Remove bullet points */
+  padding: 0;
+  max-width: 300px;            /* Limit list width */
+  margin: 20px auto;           /* Center horizontally with vertical margin */
+}
+
+/* List items with spacing and font size */
+li {
+  margin: 15px 0;
+  font-size: 22px;
+}
+
+/* Links inside list items: padding and hover effect */
+li a {
+  display: inline-block;
+  padding: 8px 12px;
   border-radius: 6px;
-  font-size: 1.5rem;
-  line-height: 1; /* Poistetaan kiinteä line-height */
-  cursor: pointer;
-  user-select: none;
   transition: background-color 0.3s;
-  color: white;
-  text-align: center;
-  aspect-ratio: 1 / 1; /* Pitää solut neliöinä */
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
-/* Oikein klikattu solu */
-.cell.correct {
+/* Hover effect on list links */
+li a:hover {
   background-color: limegreen;
   color: black;
-  cursor: default;
 }
 
-/* Tekstikoot ja marginaalit */
+/* Grid container styling */
+#grid {
+  display: grid;                           /* CSS grid layout */
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  /* Responsive: as many columns as fit, min cell width 50px, max flexible */
+  grid-gap: 10px;                         /* Space between grid cells */
+  justify-content: center;                /* Center the grid horizontally */
+  margin-top: 20px;                       /* Space above grid */
+  max-width: 350px;                       /* Limit max width */
+  width: 90vw;                           /* Take up to 90% viewport width */
+}
+
+/* Each clickable cell */
+.cell {
+  background-color: #222;                 /* Dark gray cell background */
+  border: 2px solid white;                /* White border */
+  border-radius: 6px;                     /* Rounded corners */
+  font-size: 1.5rem;                     /* Larger font size for readability */
+  line-height: 1;                        /* Normal line height */
+  cursor: pointer;                       /* Pointer cursor on hover */
+  user-select: none;                     /* Prevent text selection */
+  transition: background-color 0.3s;    /* Smooth background changes */
+  color: white;                         /* White text */
+  text-align: center;                   /* Center text */
+  aspect-ratio: 1 / 1;                  /* Make cell square */
+  display: flex;                       /* Flexbox for centering */
+  justify-content: center;             /* Horizontally center content */
+  align-items: center;                 /* Vertically center content */
+}
+
+/* Styling for cells that have been correctly clicked */
+.cell.correct {
+  background-color: limegreen;            /* Green background */
+  color: black;                          /* Black text */
+  cursor: default;                       /* Default cursor (no pointer) */
+}
+
+/* Timer and result text */
 #timer, #result {
-  font-size: 1.25rem;
-  margin-top: 15px;
+  font-size: 1.25rem;                   /* Slightly larger font */
+  margin-top: 15px;                     /* Space above */
 }
 
-/* Takaisin-nappi */
+/* Back button styling */
 .back-button {
   margin-top: 20px;
   padding: 8px 16px;
@@ -53,37 +99,39 @@
   transition: background-color 0.3s;
 }
 
+/* Back button hover effect */
 .back-button:hover {
   background-color: #0c0;
 }
 
-/* Mute-nappi tyylit */
+/* Mute button styling, matches back-button style but different color */
 #mute-btn {
   margin-top: 20px;
   padding: 8px 16px;
   font-size: 1rem;
   border: none;
-  background-color: #007bff;
+  background-color: #007bff;             /* Blue color */
   color: white;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s;
 }
 
+/* Mute button hover */
 #mute-btn:hover {
   background-color: #0056b3;
 }
 
-/* Optional: pienennetään fonttikokoa ja marginaaleja tosi pienillä näytöillä */
+/* Responsive tweak for very small screens */
 @media (max-width: 320px) {
   .cell {
-    font-size: 1.2rem;
+    font-size: 1.2rem;                  /* Slightly smaller font */
   }
   #timer, #result {
-    font-size: 1rem;
+    font-size: 1rem;                    /* Smaller text */
   }
   .back-button, #mute-btn {
-    font-size: 0.9rem;
-    padding: 6px 12px;
+    font-size: 0.9rem;                  /* Smaller buttons */
+    padding: 6px 12px;                  /* Less padding */
   }
 }
