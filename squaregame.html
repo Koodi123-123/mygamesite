@@ -3,32 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <title>SquareGame</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    canvas {
+      border: 2px solid white;
+      margin-top: 20px;
+      background-color: black;
+    }
+    .mobile-controls {
+      margin-top: 20px;
+    }
+    .mobile-controls button {
+      font-size: 24px;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 10px;
+      background-color: limegreen;
+      color: black;
+      border: none;
+    }
+    #scoreDisplay {
+      font-size: 24px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
   <h1>SquareGame</h1>
-  <p>Use the arrow keys to move the green square.</p>
+  <p>Use the arrow keys or buttons to move the green square.</p>
+  <div id="scoreDisplay">Score: 0</div>
   <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+  <div class="mobile-controls">
+    <div>
+      <button onclick="move('ArrowUp')">⬆️</button>
+    </div>
+    <div>
+      <button onclick="move('ArrowLeft')">⬅️</button>
+      <button onclick="move('ArrowDown')">⬇️</button>
+      <button onclick="move('ArrowRight')">➡️</button>
+    </div>
+  </div>
+
   <button class="back-button" onclick="location.href='index.html'">Back to Home page</button>
 
   <script>
+    // Get canvas and context (drawing surface)
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
+    // Load movement sound
+    const moveSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
+
+    // Position and settings for the square
     let x = 200, y = 200;
     const size = 20;
     const step = 10;
+    let score = 0;
 
+    // Draw the game screen
     function draw() {
-      ctx.fillStyle = "#111";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#111"; // Dark background
+      ctx.fillRect(0, 0, canvas.width, canvas.height); // Clear screen
 
-      ctx.fillStyle = "lime";
-      ctx.fillRect(x - size / 2, y - size / 2, size, size);
+      ctx.fillStyle = "lime"; // Square color
+      ctx.fillRect(x - size / 2, y - size / 2, size, size); // Centered square
     }
 
-    window.addEventListener("keydown", (e) => {
-      switch (e.key) {
+    // Move the square and play sound, increase score
+    function move(direction) {
+      switch (direction) {
         case "ArrowUp":
           if (y - step - size / 2 >= 0) y -= step;
           break;
@@ -42,10 +87,20 @@
           if (x + step + size / 2 <= canvas.width) x += step;
           break;
       }
-      draw();
+      score++; // Increase score
+      moveSound.currentTime = 0; // Reset sound
+      moveSound.play(); // Play sound
+      draw(); // Redraw
+      document.getElementById("scoreDisplay").innerText = `Score: ${score}`; // Update score display
+    }
+
+    // Keyboard support
+    window.addEventListener("keydown", (e) => {
+      move(e.key);
     });
 
-    draw();
+    draw(); // Initial draw
   </script>
 </body>
 </html>
+
