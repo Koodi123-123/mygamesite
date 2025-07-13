@@ -162,13 +162,13 @@ button:hover {
   text-align: center;
   padding: 1em;
   z-index: 1000; /* on top of grid */
-  pointer-events: none; /* allow clicks to pass through to buttons under overlay */
   white-space: pre-line; /* allow line breaks */
 }
 
 /* Hide overlay by default */
 #game-overlay.hidden {
   display: none;
+  pointer-events: none; /* disable pointer events when hidden */
 }
 
 /* Responsive scaling for overlay text on smaller screens */
