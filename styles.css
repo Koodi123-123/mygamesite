@@ -13,8 +13,9 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); /* responsive grid */
   grid-gap: 10px;
-  max-width: 350px;
+  max-width: 100%;      /* Allow grid to expand */
   margin: 20px auto;
+  width: max-content;   /* width fits the content */
 }
 
 /* Each grid cell */
@@ -96,6 +97,7 @@ button:hover {
   max-width: 400px;
   color: white;
   text-align: left;
+  line-height: 1.5;  /* improved readability */
 }
 
 /* Close button for modal */
@@ -105,20 +107,8 @@ button:hover {
   font-size: 28px;
   font-weight: bold;
   cursor: pointer;
-}
-
-.close:hover {
-  color: white;
-}
-
-.close {
-  color: #ddd;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
   user-select: none;
-  z-index: 1001; /* isompi kuin modal-content */
+  z-index: 1001; /* above modal content */
   position: relative;
 }
 
