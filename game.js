@@ -37,6 +37,28 @@ let score = 0; // Player score
 // Äänet valmiina URL-osoitteista
 const soundCorrect = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
 const soundWrong = new Audio('https://actions.google.com/sounds/v1/cartoon/boing.ogg');
+const soundGameOver = new Audio('https://actions.google.com/sounds/v1/cartoon/concussive_drum_hit.ogg');
+
+// Esiladataan äänet
+function preloadSounds() {
+  [soundCorrect, soundWrong, soundGameOver].forEach(sound => {
+    sound.load();
+    sound.addEventListener('error', () => {
+      console.error(`Äänen lataus epäonnistui: ${sound.src}`);
+    });
+  });
+}
+
+// Soita ääni turvallisesti
+function playSound(audio) {
+  if (isMuted) return;
+  if (audio.readyState >= 2) {
+    audio.currentTime = 0;
+    audio.play().catch(err => {
+      console.warn('Aäänen toisto epäonnistui:', err);
+    });
+  }
+}
 
 function initGame() {
   levelDisplay.textContent = `Level ${level}`;
@@ -49,12 +71,12 @@ function initGame() {
   clickedNumbers.clear();
   resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
   timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
-  gameStarted = false;  // Reset start flag
+  gameStarted = false;
   setupGrid();
   stopTimer();
   stopShuffle();
-  restartBtn.disabled = true; // Disable restart until game ends
-  hideOverlay();  // Hide overlay when starting the game
+  restartBtn.disabled = true;
+  hideOverlay();
 }
 
 function setupGrid() {
@@ -65,7 +87,6 @@ function setupGrid() {
 
   shuffle(numbers);
 
-  // Set grid columns based on square root of grid size (for layout)
   grid.style.gridTemplateColumns = `repeat(${Math.ceil(Math.sqrt(gridSize))}, 1fr)`;
   grid.innerHTML = '';
 
@@ -81,7 +102,6 @@ function setupGrid() {
     grid.appendChild(cell);
   }
 
-  // Add overlay back to grid if it doesn't exist
   let overlay = document.getElementById('game-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -89,14 +109,12 @@ function setupGrid() {
     overlay.classList.add('hidden');
     grid.appendChild(overlay);
   } else {
-    // If overlay exists but is not child of grid, add it back
     if (overlay.parentElement !== grid) {
       grid.appendChild(overlay);
     }
   }
 }
 
-// Fisher-Yates shuffle algorithm for randomizing arrays
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -104,11 +122,9 @@ function shuffle(array) {
   }
 }
 
-// Handles clicking a cell
 function handleClick(cell) {
   const number = parseInt(cell.dataset.number);
 
-  // Start the game timer and shuffle only after first correct click (number 1)
   if (!gameStarted && number === 1) {
     gameStarted = true;
     startTimer();
@@ -117,7 +133,7 @@ function handleClick(cell) {
   }
 
   if (!gameStarted) {
-    return;  // Ignore clicks before game started
+    return;
   }
 
   if (number === nextNumber) {
@@ -126,22 +142,21 @@ function handleClick(cell) {
     nextNumber++;
     correctClicks++;
     score += 10;
-    if (!isMuted) soundCorrect.play();
+    playSound(soundCorrect);
 
     if (nextNumber > gridSize) {
-      endGame(true);  // Player completed all numbers correctly
+      endGame(true);
     }
   } else {
     wrongClicks++;
     score -= 5;
     if (score < 0) score = 0;
-    flashBackground();  // Visual feedback for wrong click
-    if (!isMuted) soundWrong.play();
+    flashBackground();
+    playSound(soundWrong);
   }
   updateResult();
 }
 
-// Flashes background red on wrong click if not muted
 function flashBackground() {
   if (isMuted) return;
   const originalColor = document.body.style.backgroundColor;
@@ -151,35 +166,33 @@ function flashBackground() {
   }, 200);
 }
 
-// Updates score and click counts display
 function updateResult() {
   resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
 }
 
-// Starts countdown timer
 function startTimer() {
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     timer -= 0.01;
     if (timer <= 0) {
       timer = 0;
-      endGame(false);  // Time ran out
+      endGame(false);
     }
     timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
   }, 10);
 }
 
-// Stops the timer
 function stopTimer() {
   clearInterval(timerInterval);
 }
 
-// Ends the game and shows overlay with results
 function endGame(success) {
   stopTimer();
   stopShuffle();
   gameStarted = false;
   restartBtn.disabled = false;
+
+  playSound(soundGameOver);
 
   if (success) {
     showOverlay(`<strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>`);
@@ -192,7 +205,6 @@ function endGame(success) {
 
     level++;
 
-    // Automatically start next level after 3 seconds
     setTimeout(() => {
       hideOverlay();
       initGame();
@@ -209,22 +221,19 @@ function endGame(success) {
   }
 }
 
-// Shows the overlay with a message
 function showOverlay(message) {
   const overlay = document.getElementById('game-overlay');
   overlay.innerHTML = message;
   overlay.classList.remove('hidden');
-  overlay.style.pointerEvents = 'auto';  // Prevent clicks passing through
+  overlay.style.pointerEvents = 'auto';
 }
 
-// Hides the overlay
 function hideOverlay() {
   const overlay = document.getElementById('game-overlay');
   overlay.classList.add('hidden');
   overlay.style.pointerEvents = 'none';
 }
 
-// Starts the shuffle interval for unclicked numbers every 6 seconds
 function startShuffle() {
   clearInterval(shuffleInterval);
   shuffleInterval = setInterval(() => {
@@ -232,25 +241,20 @@ function startShuffle() {
   }, 6000);
 }
 
-// Stops the shuffle interval
 function stopShuffle() {
   clearInterval(shuffleInterval);
 }
 
-// *** Fixed shuffle function that only considers .cell elements that are unclicked ***
 function shuffleUnclickedNumbers() {
   const cells = Array.from(grid.children);
-  // Filter only cells with class 'cell' and with dataset.position, excluding clicked ones
   const unclickedCells = cells.filter(c => c.classList.contains('cell') && c.dataset.position !== undefined && !clickedNumbers.has(c.dataset.position));
 
-  if (unclickedCells.length <= 1) return; // No point shuffling if 0 or 1 cells left
+  if (unclickedCells.length <= 1) return;
 
-  // Extract the numbers of unclicked cells
   const unclickedNumbers = unclickedCells.map(c => parseInt(c.dataset.number));
 
   shuffle(unclickedNumbers);
 
-  // Reassign shuffled numbers back to the unclicked cells
   for (let i = 0; i < unclickedCells.length; i++) {
     const num = unclickedNumbers[i];
     if (!isNaN(num)) {
@@ -260,20 +264,17 @@ function shuffleUnclickedNumbers() {
   }
 }
 
-// Mute button toggles sound effects
 muteBtn.addEventListener('click', () => {
   isMuted = !isMuted;
   muteBtn.textContent = isMuted ? '🔇 Muted' : '🔊 Mute';
 });
 
-// Restart button restarts the game
 restartBtn.addEventListener('click', () => {
   restartBtn.disabled = true;
   hideOverlay();
   initGame();
 });
 
-// Instructions modal show/hide handlers
 showInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'block';
 });
@@ -282,5 +283,7 @@ closeInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'none';
 });
 
-// Initialize the game when the page loads
-initGame();
+window.addEventListener('load', () => {
+  preloadSounds();
+  initGame();
+});
