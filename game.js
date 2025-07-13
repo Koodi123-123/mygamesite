@@ -1,39 +1,44 @@
-// DOM references
+// Get references to DOM elements
 const grid = document.getElementById('grid');
 const timerDisplay = document.getElementById('timer');
 const resultDisplay = document.getElementById('result');
 const muteBtn = document.getElementById('mute-btn');
 
-// Game constants
-const GRID_SIZE = 25;       // Number of cells (5x5)
-const TIME_LIMIT = 30;      // Time limit in seconds
-const MOVE_INTERVAL = 5000; // Interval for moving numbers in ms (5s)
-const FAST_CLICK_THRESHOLD = 800; // ms threshold for bonus points
+// Constants for game configuration
+const TIME_LIMIT = 30; // seconds total time to finish
+const MOVE_INTERVAL = 5000; // milliseconds between number moves
+
+// Array of numbers 1 through 25
+let numbers = Array.from({ length: 25 }, (_, i) => i + 1);
 
 // Game state variables
-let numbers = Array.from({ length: GRID_SIZE }, (_, i) => i + 1);
-let currentNumber = 1;
-let startTime = null;
-let timerInterval = null;
-let moveInterval = null;
-let isMuted = false;
-let score = 0;
-let penalty = 0;
-let lastClickTime = null;
+let currentNumber = 1;  // The next number the player must click
+let score = 0;          // Player score (increases with speed)
+let penalty = 0;        // Penalty points for wrong clicks
+let startTime = null;   // Time when the game starts
+let lastClickTime = null; // Time of last correct click
+let timerInterval = null; // Interval for countdown timer
+let moveInterval = null;  // Interval to move numbers periodically
+let isMuted = false;      // Sound mute flag
 
-// Sounds setup
+// Load audio clips for sounds
 const sounds = {
-  click: new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg'),
-  error: new Audio('https://actions.google.com/sounds/v1/cartoon/boing.ogg'),
-  success: new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg'),
-  fail: new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg'),
+  correct: new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg'),
+  wrong: new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg'),
+  finish: new Audio('https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg'),
+  fail: new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg')
 };
 
-for (const sound of Object.values(sounds)) {
-  sound.volume = 0.3;
+// Set volumes lower for all sounds
+for (let key in sounds) {
+  sounds[key].volume = 0.3;
 }
 
-// Shuffle function using Fisher-Yates algorithm
+/**
+ * Shuffle the elements of an array in-place using Fisher-Yates algorithm.
+ * @param {Array} array The array to shuffle.
+ * @returns {Array} The shuffled array.
+ */
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -42,143 +47,159 @@ function shuffle(array) {
   return array;
 }
 
-// Start the main game timer and update display every 100ms
-function startTimer() {
-  startTime = Date.now();
-  timerInterval = setInterval(() => {
-    const elapsed = (Date.now() - startTime) / 1000;
-    const timeLeft = Math.max(0, (TIME_LIMIT - elapsed));
-    timerDisplay.textContent = `Time left: ${timeLeft.toFixed(2)} s`;
-
-    if (timeLeft <= 0) {
-      endGame(false);
-    }
-  }, 100);
-}
-
-// Stop all intervals and timers
-function stopAllTimers() {
-  clearInterval(timerInterval);
-  clearInterval(moveInterval);
-}
-
-// Move numbers to new random positions (reshuffle and re-render)
-function moveNumbers() {
-  shuffle(numbers);
-  renderGrid();
-}
-
-// Render the grid based on the current numbers array
+/**
+ * Render the grid cells with current numbers.
+ * Adds click event listeners for gameplay.
+ */
 function renderGrid() {
-  grid.innerHTML = '';
+  grid.innerHTML = ''; // Clear the grid
 
   numbers.forEach(num => {
     const cell = document.createElement('div');
     cell.className = 'cell';
     cell.textContent = num;
 
-    // Highlight the next number to click
-    if (num === currentNumber) {
-      cell.style.border = '2px solid #FFD700'; // gold highlight
-      cell.style.fontWeight = 'bold';
-    } else {
-      cell.style.border = '';
-      cell.style.fontWeight = '';
-    }
+    // Click event listener for each cell
+    cell.addEventListener('click', () => {
+      if (!startTime && num === 1) {
+        // Game starts when player clicks '1' first time
+        startGame();
+      }
 
-    cell.addEventListener('click', () => handleClick(num, cell));
+      if (!startTime) {
+        // Ignore clicks before game start except '1'
+        return;
+      }
+
+      if (num === currentNumber) {
+        // Correct number clicked
+        cell.classList.add('correct');
+
+        // Play success sound if not muted
+        if (!isMuted) {
+          sounds.correct.currentTime = 0;
+          sounds.correct.play();
+        }
+
+        // Calculate score based on speed (faster clicks = more points)
+        let now = Date.now();
+        if (lastClickTime) {
+          const diff = now - lastClickTime;
+          // Faster than 1 second: +5 points, else +1 point
+          score += diff < 1000 ? 5 : 1;
+        } else {
+          // First click gives base 1 point
+          score += 1;
+        }
+        lastClickTime = now;
+
+        currentNumber++;
+
+        if (currentNumber > 25) {
+          // Game finished successfully
+          finishGame(true);
+        }
+      } else {
+        // Wrong number clicked
+        penalty += 3; // Penalize 3 points
+
+        if (!isMuted) {
+          sounds.wrong.currentTime = 0;
+          sounds.wrong.play();
+        }
+      }
+    });
 
     grid.appendChild(cell);
   });
 }
 
-// Handle a click on a cell with number 'num'
-function handleClick(num, cell) {
-  const now = Date.now();
-
-  // If game hasn't started yet and player clicks '1', start timer and move interval
-  if (!startTime && num === 1) {
-    startTimer();
-    moveInterval = setInterval(moveNumbers, MOVE_INTERVAL);
-    lastClickTime = now;
-  }
-
-  // Ignore clicks if game not started or already ended
-  if (!startTime || currentNumber > GRID_SIZE) return;
-
-  if (num === currentNumber) {
-    // Correct click
-    cell.classList.add('correct');
-
-    // Calculate if fast click bonus applies (click within threshold ms from last click)
-    if (lastClickTime && (now - lastClickTime) <= FAST_CLICK_THRESHOLD) {
-      score += 2; // bonus points for fast click
-    } else {
-      score += 1;
-    }
-    lastClickTime = now;
-
-    // Play success click sound
-    if (!isMuted) {
-      sounds.click.currentTime = 0;
-      sounds.click.play();
-    }
-
-    currentNumber++;
-
-    // Check if game finished successfully
-    if (currentNumber > GRID_SIZE) {
-      endGame(true);
-    } else {
-      renderGrid(); // Update grid to highlight next number
-    }
-  } else {
-    // Wrong click
-    penalty++;
-
-    // Play error sound
-    if (!isMuted) {
-      sounds.error.currentTime = 0;
-      sounds.error.play();
-    }
-
-    // Flash red animation on clicked cell to indicate error
-    cell.classList.add('error');
-    setTimeout(() => cell.classList.remove('error'), 300);
-  }
+/**
+ * Moves numbers randomly in the grid every MOVE_INTERVAL milliseconds.
+ * Called repeatedly during the game.
+ */
+function moveNumbersPeriodically() {
+  numbers = shuffle(numbers);
+  renderGrid();
 }
 
-// End the game either success or fail
-function endGame(success) {
-  stopAllTimers();
+/**
+ * Starts the game timer and periodic movement of numbers.
+ */
+function startGame() {
+  startTime = Date.now();
+  lastClickTime = startTime;
 
-  const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2);
-  const finalScore = Math.max(0, score - penalty);
+  // Update timer display every 100ms counting down
+  timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const timeLeft = Math.max(TIME_LIMIT - elapsed, 0);
+    timerDisplay.textContent = `Time left: ${timeLeft.toFixed(2)} s`;
 
-  // Save best time if success and time is better
-  if (success) {
-    let bestTime = localStorage.getItem('bestTime');
-    if (!bestTime || elapsedTime < bestTime) {
-      localStorage.setItem('bestTime', elapsedTime);
-      bestTime = elapsedTime;
+    if (timeLeft <= 0) {
+      // Time's up - game over fail
+      finishGame(false);
     }
+  }, 100);
 
+  // Start moving numbers every MOVE_INTERVAL ms
+  moveInterval = setInterval(() => {
+    moveNumbersPeriodically();
+  }, MOVE_INTERVAL);
+}
+
+/**
+ * Ends the game, stops intervals and shows result message.
+ * @param {boolean} success True if player finished successfully.
+ */
+function finishGame(success) {
+  clearInterval(timerInterval);
+  clearInterval(moveInterval);
+
+  // Calculate final time taken or time expired
+  let finalTime;
+  if (success) {
+    finalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+  } else {
+    finalTime = TIME_LIMIT.toFixed(2);
+  }
+
+  // Calculate final score subtracting penalty points, min 0
+  let finalScore = Math.max(score - penalty, 0);
+
+  // Load and save best time from localStorage
+  const bestTimeKey = 'numberGridBestTime';
+  let bestTime = localStorage.getItem(bestTimeKey);
+
+  if (success) {
+    if (!bestTime || finalTime < bestTime) {
+      bestTime = finalTime;
+      localStorage.setItem(bestTimeKey, bestTime);
+    }
+  }
+
+  // Disable all grid clicks after game ends by removing event listeners
+  grid.querySelectorAll('.cell').forEach(cell => {
+    cell.style.cursor = 'default';
+    cell.replaceWith(cell.cloneNode(true)); // Remove all listeners
+  });
+
+  if (success) {
     resultDisplay.innerHTML = `
       <div class="result-message success">
-        🎉 Congratulations! You finished in ${elapsedTime} seconds.<br />
-        Score: ${finalScore} (Points: ${score}, Penalties: ${penalty})<br />
+        🎉 Congratulations! You finished in ${finalTime} seconds.<br />
+        Your score: ${finalScore} (Points: ${score}, Penalties: ${penalty})<br />
         Best time: ${bestTime} seconds
       </div>
     `;
 
-    // Play success sound
     if (!isMuted) {
-      sounds.success.currentTime = 0;
-      sounds.success.play();
+      sounds.finish.currentTime = 0;
+      sounds.finish.play();
     }
 
-    // Success animation
     animateGridSuccess();
+
   } else {
     resultDisplay.innerHTML = `
       <div class="result-message fail">
@@ -187,18 +208,18 @@ function endGame(success) {
       </div>
     `;
 
-    // Play fail sound
     if (!isMuted) {
       sounds.fail.currentTime = 0;
       sounds.fail.play();
     }
 
-    // Failure animation
     animateGridFail();
   }
 }
 
-// Success animation - scale up and color flash green on all cells
+/**
+ * Animate grid for success: scale up and flash green cells sequentially.
+ */
 function animateGridSuccess() {
   const cells = document.querySelectorAll('.cell');
   cells.forEach((cell, index) => {
@@ -215,7 +236,9 @@ function animateGridSuccess() {
   });
 }
 
-// Failure animation - shake grid container horizontally
+/**
+ * Animate grid failure by shaking the entire grid horizontally.
+ */
 function animateGridFail() {
   grid.style.animation = 'shake 0.5s';
   grid.addEventListener('animationend', () => {
@@ -223,7 +246,7 @@ function animateGridFail() {
   }, { once: true });
 }
 
-// Shake animation keyframes
+// Shake animation CSS keyframes injected dynamically
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   @keyframes shake {
@@ -236,20 +259,21 @@ styleSheet.textContent = `
 `;
 document.head.appendChild(styleSheet);
 
-// Toggle mute state and button text
+// Toggle mute state and update button text
 muteBtn.addEventListener('click', () => {
   isMuted = !isMuted;
   muteBtn.textContent = isMuted ? '🔇 Unmute' : '🔊 Mute';
 });
 
-// Initialize the game grid on page load
+// Initialize game on page load
 window.addEventListener('DOMContentLoaded', () => {
-  shuffle(numbers);
-  renderGrid();
-  timerDisplay.textContent = `Time left: ${TIME_LIMIT}.00 s`;
-  resultDisplay.textContent = '';
+  numbers = shuffle(numbers);
+  currentNumber = 1;
   score = 0;
   penalty = 0;
-  currentNumber = 1;
   startTime = null;
+  lastClickTime = null;
+  timerDisplay.textContent = `Time left: ${TIME_LIMIT}.00 s`;
+  resultDisplay.textContent = '';
+  renderGrid();
 });
