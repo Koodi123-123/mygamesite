@@ -10,12 +10,12 @@ body {
 
 /* Grid container styling */
 #grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  max-width: 340px;  /* 5 cells * (60px + 2*5px margin) */
+  display: grid;
+  grid-template-columns: repeat(5, 60px); /* 5 saraketta, kukin 60px leveä */
+  grid-gap: 10px; /* tila solujen välillä */
+  justify-content: center; /* keskitä ruudukko */
+  max-width: 340px;
   margin: 20px auto;
-  background-color: transparent; /* Ensure it doesn't override body background */
 }
 
 /* Individual cell styling */
