@@ -3,6 +3,7 @@ const grid = document.getElementById('grid');
 const timerDisplay = document.getElementById('timer');
 const resultDisplay = document.getElementById('result');
 const muteBtn = document.getElementById('mute-btn');
+const restartBtn = document.getElementById('restart-btn');  // Lisää restart-painike HTML:ään!
 
 // Array of numbers 1 through 25 - represents numbers on grid
 let numbers = Array.from({ length: 25 }, (_, i) => i + 1);
@@ -70,7 +71,7 @@ function stopTimer() {
   clearInterval(timerInterval);
 }
 
-// Creates the grid cells only once
+// Creates the grid cells only once and attaches event listeners
 function createGrid() {
   grid.innerHTML = ''; // Clear grid
 
@@ -249,6 +250,11 @@ function animateFailure() {
 muteBtn.addEventListener('click', () => {
   isMuted = !isMuted;
   muteBtn.textContent = isMuted ? '🔇 Unmute' : '🔊 Mute';
+});
+
+// Restart game button click handler
+restartBtn.addEventListener('click', () => {
+  resetGame();
 });
 
 // Reset game state and start fresh game
