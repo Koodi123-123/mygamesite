@@ -34,6 +34,10 @@ let clickedNumbers = new Set();  // Tracks clicked cell positions
 let gameStarted = false; // Tracks if timer & shuffle started
 let score = 0; // Player score
 
+// Äänet valmiina URL-osoitteista
+const soundCorrect = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
+const soundWrong = new Audio('https://actions.google.com/sounds/v1/cartoon/boing.ogg');
+
 function initGame() {
   levelDisplay.textContent = `Level ${level}`;
   gridSize = 25 + (level - 1) * 5;
@@ -122,6 +126,8 @@ function handleClick(cell) {
     nextNumber++;
     correctClicks++;
     score += 10;
+    if (!isMuted) soundCorrect.play();
+
     if (nextNumber > gridSize) {
       endGame(true);  // Player completed all numbers correctly
     }
@@ -130,6 +136,7 @@ function handleClick(cell) {
     score -= 5;
     if (score < 0) score = 0;
     flashBackground();  // Visual feedback for wrong click
+    if (!isMuted) soundWrong.play();
   }
   updateResult();
 }
