@@ -1,78 +1,50 @@
-body {
-  background-color: #111;
-  color: white;
-  font-family: sans-serif;
-  text-align: center;
-  padding: 20px;
-  margin: 0;
-}
-
-a {
-  color: #0f0;
-  text-decoration: none;
-  font-size: 20px;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  max-width: 300px;
-  margin: 20px auto;
-}
-
-li {
-  margin: 15px 0;
-  font-size: 22px;
-}
-
-li a {
-  display: inline-block;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: background-color 0.3s;
-}
-
-li a:hover {
-  background-color: limegreen;
-  color: black;
-}
-
+/* Responsive grid: grid-template-columns skaalautuu pienemmillä näytöillä */
 #grid {
   display: grid;
-  grid-template-columns: repeat(5, 60px);
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
   grid-gap: 10px;
   justify-content: center;
   margin-top: 20px;
+  max-width: 350px;
+  width: 90vw;
 }
 
+/* Solujen skaalautuva neliö */
 .cell {
   background-color: #222;
   border: 2px solid white;
   border-radius: 6px;
-  font-size: 24px;
-  line-height: 60px;
+  font-size: 1.5rem;
+  line-height: 1; /* Poistetaan kiinteä line-height */
   cursor: pointer;
   user-select: none;
   transition: background-color 0.3s;
   color: white;
   text-align: center;
+  aspect-ratio: 1 / 1; /* Pitää solut neliöinä */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* Oikein klikattu solu */
 .cell.correct {
   background-color: limegreen;
   color: black;
   cursor: default;
 }
 
+/* Tekstikoot ja marginaalit */
 #timer, #result {
-  font-size: 20px;
+  font-size: 1.25rem;
   margin-top: 15px;
 }
 
+/* Takaisin-nappi */
 .back-button {
   margin-top: 20px;
   padding: 8px 16px;
-  font-size: 16px;
+  font-size: 1rem;
   border: none;
   background-color: limegreen;
   color: black;
@@ -85,3 +57,33 @@ li a:hover {
   background-color: #0c0;
 }
 
+/* Mute-nappi tyylit */
+#mute-btn {
+  margin-top: 20px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#mute-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Optional: pienennetään fonttikokoa ja marginaaleja tosi pienillä näytöillä */
+@media (max-width: 320px) {
+  .cell {
+    font-size: 1.2rem;
+  }
+  #timer, #result {
+    font-size: 1rem;
+  }
+  .back-button, #mute-btn {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+  }
+}
