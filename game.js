@@ -147,10 +147,20 @@ function endGame(success) {
   restartBtn.disabled = false;
 
   if (success) {
-    resultDisplay.textContent = `Congratulations! You completed Level ${level}!\nFinal Score: ${score}`;
+    resultDisplay.innerHTML = `
+      <strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>
+      Final Score: ${score}<br/>
+      Correct Clicks: ${correctClicks}<br/>
+      Wrong Clicks: ${wrongClicks}
+    `;
     level++;
   } else {
-    resultDisplay.textContent = `Time's up! Try again to reach next level.\nFinal Score: ${score}`;
+    resultDisplay.innerHTML = `
+      <strong>⏱️ Time's up! Try again to reach next level.</strong><br/>
+      Final Score: ${score}<br/>
+      Correct Clicks: ${correctClicks}<br/>
+      Wrong Clicks: ${wrongClicks}
+    `;
   }
 }
 
