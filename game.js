@@ -154,6 +154,10 @@ function endGame(success) {
       Wrong Clicks: ${wrongClicks}
     `;
     level++;
+
+    // ✅ UUSI LISÄYS: Aloittaa seuraavan tason automaattisesti 3 sekunnin kuluttua
+    setTimeout(initGame, 3000);
+
   } else {
     resultDisplay.innerHTML = `
       <strong>⏱️ Time's up! Try again to reach next level.</strong><br/>
