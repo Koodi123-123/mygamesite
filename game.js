@@ -4,10 +4,6 @@
  * Copyright (c) 2025 Koodi123-123
  * 
  * Licensed under the MIT License.
- * You may use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of this software under the conditions of the MIT License.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
  */
 
 const grid = document.getElementById('grid');
@@ -48,7 +44,6 @@ function preloadSounds() {
     });
   });
 
-  // Aktivoi selaimen äänet käyttäjän ensimmäisestä klikkauksesta
   document.body.addEventListener('click', () => {
     [soundWrong, soundGameOver, soundLevelUp].forEach(snd => {
       snd.play().then(() => {
@@ -84,7 +79,6 @@ function initGame() {
   setupGrid();
   stopTimer();
   stopShuffle();
-  restartBtn.disabled = true;
   hideOverlay();
 }
 
@@ -138,7 +132,6 @@ function handleClick(cell) {
     gameStarted = true;
     startTimer();
     startShuffle();
-    restartBtn.disabled = false;
   }
 
   if (!gameStarted) return;
@@ -200,13 +193,12 @@ function endGame(success) {
   stopTimer();
   stopShuffle();
   gameStarted = false;
-  restartBtn.disabled = false;
 
   if (!success) {
     playSound(soundGameOver);
-    showOverlay(`<strong>⏱️ Time's up! Try again to reach next level.</strong><br/>`);
+    showOverlay(`<strong>⏱️ Time's up! Try again to reach next level.</strong><br/>`, true);
   } else {
-    showOverlay(`<strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>`);
+    showOverlay(`<strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>`, false);
     level++;
     setTimeout(() => {
       hideOverlay();
@@ -221,11 +213,24 @@ function endGame(success) {
   `;
 }
 
-function showOverlay(message) {
+function showOverlay(message, showRestartBtn = false) {
   const overlay = document.getElementById('game-overlay');
-  overlay.innerHTML = message;
+  overlay.innerHTML = `
+    <div class="overlay-content">
+      ${message}
+      ${showRestartBtn ? '<button id="restart-btn" class="restart-button">🔄 Restart</button>' : ''}
+    </div>
+  `;
   overlay.classList.remove('hidden');
   overlay.style.pointerEvents = 'auto';
+
+  if (showRestartBtn) {
+    const btn = document.getElementById('restart-btn');
+    btn.addEventListener('click', () => {
+      hideOverlay();
+      initGame();
+    });
+  }
 }
 
 function hideOverlay() {
@@ -265,12 +270,6 @@ function shuffleUnclickedNumbers() {
 muteBtn.addEventListener('click', () => {
   isMuted = !isMuted;
   muteBtn.textContent = isMuted ? '🔇 Muted' : '🔊 Mute';
-});
-
-restartBtn.addEventListener('click', () => {
-  restartBtn.disabled = true;
-  hideOverlay();
-  initGame();
 });
 
 showInstructionsBtn.addEventListener('click', () => {
