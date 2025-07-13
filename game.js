@@ -77,7 +77,7 @@ function renderGrid() {
     cell.className = 'cell';
     cell.textContent = num;
 
-    // Highlight the next number to click (optional)
+    // Highlight the next number to click
     if (num === currentNumber) {
       cell.style.border = '2px solid #FFD700'; // gold highlight
       cell.style.fontWeight = 'bold';
@@ -130,3 +130,126 @@ function handleClick(num, cell) {
     if (currentNumber > GRID_SIZE) {
       endGame(true);
     } else {
+      renderGrid(); // Update grid to highlight next number
+    }
+  } else {
+    // Wrong click
+    penalty++;
+
+    // Play error sound
+    if (!isMuted) {
+      sounds.error.currentTime = 0;
+      sounds.error.play();
+    }
+
+    // Flash red animation on clicked cell to indicate error
+    cell.classList.add('error');
+    setTimeout(() => cell.classList.remove('error'), 300);
+  }
+}
+
+// End the game either success or fail
+function endGame(success) {
+  stopAllTimers();
+
+  const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2);
+  const finalScore = Math.max(0, score - penalty);
+
+  // Save best time if success and time is better
+  if (success) {
+    let bestTime = localStorage.getItem('bestTime');
+    if (!bestTime || elapsedTime < bestTime) {
+      localStorage.setItem('bestTime', elapsedTime);
+      bestTime = elapsedTime;
+    }
+
+    resultDisplay.innerHTML = `
+      <div class="result-message success">
+        🎉 Congratulations! You finished in ${elapsedTime} seconds.<br />
+        Score: ${finalScore} (Points: ${score}, Penalties: ${penalty})<br />
+        Best time: ${bestTime} seconds
+      </div>
+    `;
+
+    // Play success sound
+    if (!isMuted) {
+      sounds.success.currentTime = 0;
+      sounds.success.play();
+    }
+
+    // Success animation
+    animateGridSuccess();
+  } else {
+    resultDisplay.innerHTML = `
+      <div class="result-message fail">
+        ⏰ Time's up! Game over.<br />
+        Score: ${finalScore} (Points: ${score}, Penalties: ${penalty})
+      </div>
+    `;
+
+    // Play fail sound
+    if (!isMuted) {
+      sounds.fail.currentTime = 0;
+      sounds.fail.play();
+    }
+
+    // Failure animation
+    animateGridFail();
+  }
+}
+
+// Success animation - scale up and color flash green on all cells
+function animateGridSuccess() {
+  const cells = document.querySelectorAll('.cell');
+  cells.forEach((cell, index) => {
+    setTimeout(() => {
+      cell.style.transition = 'transform 0.3s, background-color 0.3s';
+      cell.style.transform = 'scale(1.3)';
+      cell.style.backgroundColor = '#4caf50';
+
+      setTimeout(() => {
+        cell.style.transform = 'scale(1)';
+        cell.style.backgroundColor = '#333';
+      }, 300);
+    }, index * 50);
+  });
+}
+
+// Failure animation - shake grid container horizontally
+function animateGridFail() {
+  grid.style.animation = 'shake 0.5s';
+  grid.addEventListener('animationend', () => {
+    grid.style.animation = '';
+  }, { once: true });
+}
+
+// Shake animation keyframes
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    50% { transform: translateX(8px); }
+    75% { transform: translateX(-8px); }
+    100% { transform: translateX(0); }
+  }
+`;
+document.head.appendChild(styleSheet);
+
+// Toggle mute state and button text
+muteBtn.addEventListener('click', () => {
+  isMuted = !isMuted;
+  muteBtn.textContent = isMuted ? '🔇 Unmute' : '🔊 Mute';
+});
+
+// Initialize the game grid on page load
+window.addEventListener('DOMContentLoaded', () => {
+  shuffle(numbers);
+  renderGrid();
+  timerDisplay.textContent = `Time left: ${TIME_LIMIT}.00 s`;
+  resultDisplay.textContent = '';
+  score = 0;
+  penalty = 0;
+  currentNumber = 1;
+  startTime = null;
+});
