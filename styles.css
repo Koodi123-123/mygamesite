@@ -59,7 +59,7 @@ h1 {
   border-radius: 6px; /* rounded corners */
   box-shadow: 0 0 8px #444 inset; /* inner glow */
   font-weight: bold; /* bold text */
-  font-size: clamp(0.9rem, 2vw, 1.4rem); /* responsive text size */
+  font-size: clamp(1.3rem, 3vw, 2rem); /* responsive text size */
   aspect-ratio: 1 / 1; /* square shape */
   text-align: center; /* center text */
   cursor: pointer; /* pointer cursor on hover */
@@ -222,7 +222,7 @@ button:hover {
   }
 
   .cell {
-    font-size: clamp(0.8rem, 4vw, 1.1rem); /* adjust font size */
+    font-size: clamp(1rem, 5vw, 1.4rem); /* adjust font size */
   }
 
   #level-display {
