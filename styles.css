@@ -9,251 +9,278 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
  */
 
+/* Base font size for the whole HTML document */
 html {
-  font-size: 100%; /* or 16px */
+  font-size: 100%; /* typically 16px */
 }
 
+/* Body styles: dark theme, centered text, default font */
 body {
-  background-color: #222;
-  color: #eee;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding: 20px;
-  margin: 0;
-  text-align: center;
-  font-size: 1rem;
+  background-color: #222; /* dark background */
+  color: #eee; /* light text */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* clean sans-serif font */
+  padding: 20px; /* space around the content */
+  margin: 0; /* remove default margin */
+  text-align: center; /* center-align text */
+  font-size: 1rem; /* base font size */
 }
 
+/* Heading color for better visibility */
 h1 {
-  color: #39FF14;
+  color: #39FF14; /* neon green */
 }
 
+/* Display for the level indicator */
 #level-display {
-  font-size: 1.3em;
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #39FF14; /* green */
+  font-size: 1.3em; /* slightly larger text */
+  font-weight: bold; /* bold font */
+  margin-bottom: 10px; /* space below */
+  color: #39FF14; /* neon green */
 }
 
+/* Main grid container */
 #grid {
-  display: grid;
-  gap: 6px;
-  margin: 20px auto;
-  max-width: 100vw;
-  padding: 0 5vw;
-  box-sizing: border-box;
-  user-select: none;
-  position: relative; /* Needed for overlay positioning */
+  display: grid; /* use CSS grid layout */
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); /* responsive columns */
+  gap: 6px; /* spacing between cells */
+  margin: 20px auto; /* center the grid */
+  max-width: min(90vw, 600px); /* responsive width, max 600px */
+  max-height: 80vh; /* prevent grid from exceeding viewport height */
+  overflow-y: auto; /* scroll if content overflows vertically */
+  padding: 0 5vw; /* horizontal padding */
+  box-sizing: border-box; /* include padding in size */
+  user-select: none; /* disable text selection */
+  position: reltive; /* typo: should be 'relative' for positioning */
 }
 
+/* Style for each grid cell */
 .cell {
-  background-color: #333;
-  border-radius: 6px;
-  box-shadow: 0 0 8px #444 inset;
-  font-weight: bold;
-  font-size: clamp(0.9rem, 2vw, 1.4rem);
-  aspect-ratio: 1 / 1;
-  text-align: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  user-select: none;
-  color: #eee;
-  border: 2px solid transparent;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background-color: #333; /* dark cell background */
+  border-radius: 6px; /* rounded corners */
+  box-shadow: 0 0 8px #444 inset; /* inner glow */
+  font-weight: bold; /* bold text */
+  font-size: clamp(0.9rem, 2vw, 1.4rem); /* responsive text size */
+  aspect-ratio: 1 / 1; /* square shape */
+  text-align: center; /* center text */
+  cursor: pointer; /* pointer cursor on hover */
+  transition: background-color 0.3s ease; /* smooth color change */
+  user-select: none; /* disable text selection */
+  color: #eee; /* light text */
+  border: 2px solid transparent; /* invisible border (used for highlighting) */
+  display: flex; /* use flex to center content */
+  justify-content: center; /* horizontally center */
+  align-items: center; /* vertically center */
 }
 
+/* Hover effect for clickable cells */
 .cell:hover {
-  background-color: #0a84ff;
-  border-color: #06f;
+  background-color: #0a84ff; /* bright blue background on hover */
+  border-color: #06f; /* highlight border */
 }
 
+/* Styling for correct answer cells */
 .cell.correct {
-  background-color: #39FF14; /* green */
-  color: #fff;
-  cursor: default;
-  border-color: #d15b9e;
-  box-shadow: 0 0 10px #d15b9e inset;
+  background-color: #39FF14; /* bright green background */
+  color: #fff; /* white text */
+  cursor: default; /* normal cursor */
+  border-color: #d15b9e; /* pink border */
+  box-shadow: 0 0 10px #d15b9e inset; /* inner glow */
 }
 
+/* Countdown timer display */
 #timer {
-  margin-top: 10px;
-  font-size: 1.1em;
-  font-weight: 600;
-  color: #fff;
+  margin-top: 10px; /* spacing above */
+  font-size: 1.1em; /* slightly larger font */
+  font-weight: 600; /* semi-bold */
+  color: #fff; /* white text */
 }
 
+/* Result message after clicking */
 #result {
-  margin-top: 15px;
-  font-size: 1.1em;
-  font-weight: 600;
-  min-height: 4em;
-  white-space: pre-line; /* preserves line breaks after mouse actions */
-  text-align: center;    /* centered text */
+  margin-top: 15px; /* spacing above */
+  font-size: 1.1em; /* slightly larger text */
+  font-weight: 600; /* semi-bold */
+  min-height: 4em; /* reserve vertical space */
+  white-space: pre-line; /* preserve line breaks */
+  text-align: center; /* center text */
 }
 
+/* Button container styles */
 #controls {
-  margin-top: 8px; /* reduced from previous 20px */
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;        /* reduced from previous 10px */
+  margin-top: 8px; /* spacing above */
+  display: flex; /* flex layout for buttons */
+  flex-wrap: wrap; /* wrap to next line if needed */
+  justify-content: center; /* center buttons */
+  gap: 6px; /* spacing between buttons */
 }
 
+/* General button styles */
 button {
-  cursor: pointer;
-  font-size: 1em;
-  padding: 10px 16px;
-  margin: 6px 6px 6px 0;
-  border-radius: 6px;
-  border: none;
-  background-color: #ff69b4; /* pink */
-  color: #fff;
-  box-shadow: 0 3px 6px #b34780 inset;
-  transition: background-color 0.25s ease;
-  user-select: none;
+  cursor: pointer; /* pointer on hover */
+  font-size: 1em; /* base font size */
+  padding: 10px 16px; /* space inside button */
+  margin: 6px 6px 6px 0; /* space around buttons */
+  border-radius: 6px; /* rounded corners */
+  border: none; /* no border */
+  background-color: #ff69b4; /* hot pink background */
+  color: #fff; /* white text */
+  box-shadow: 0 3px 6px #b34780 inset; /* inner glow effect */
+  transition: background-color 0.25s ease; /* smooth hover transition */
+  user-select: none; /* disable text selection */
 }
 
+/* Button hover effect */
 button:hover {
-  background-color: #e055a0; /* darker pink on hover */
-  color: #fff;
+  background-color: #e055a0; /* darker pink */
+  color: #fff; /* white text */
 }
 
+/* Special styling for back buttons */
 .back-button {
-  background-color: #ff69b4; /* pink */
-  box-shadow: none;
+  background-color: #ff69b4; /* hot pink */
+  box-shadow: none; /* no inner shadow */
 }
 
+/* Hover effect for back buttons */
 .back-button:hover {
-  background-color: #e055a0;
+  background-color: #e055a0; /* darker pink */
 }
 
+/* Modal window background */
 .modal {
-  display: none; /* Hidden by default */
-  position: fixed;
-  z-index: 20;
+  display: none; /* hidden by default */
+  position: fixed; /* stay in place */
+  z-index: 20; /* sit above other elements */
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.75);
-  padding-top: 60px;
-  user-select: none;
+  overflow: auto; /* scroll if needed */
+  background-color: rgba(0,0,0,0.75); /* semi-transparent black */
+  padding-top: 60px; /* space from top */
+  user-select: none; /* disable text selection */
 }
 
+/* Modal content box */
 .modal-content {
-  background-color: #333;
-  margin: auto;
-  padding: 20px 30px;
-  border: 1px solid #555;
-  width: 90%;
-  max-width: 600px;
-  color: #eee;
-  border-radius: 12px;
-  text-align: left;
+  background-color: #333; /* dark background */
+  margin: auto; /* center horizontally */
+  padding: 20px 30px; /* inner padding */
+  border: 1px solid #555; /* border */
+  width: 90%; /* responsive width */
+  max-width: 600px; /* max width */
+  color: #eee; /* light text */
+  border-radius: 12px; /* rounded corners */
+  text-align: left; /* align text left */
 }
 
+/* Close (X) button inside modal */
 .close {
-  color: #eee;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
+  color: #eee; /* light text */
+  float: right; /* align to right */
+  font-size: 28px; /* large size */
+  font-weight: bold; /* bold font */
+  cursor: pointer; /* pointer cursor */
 }
 
+/* Hover effect for close button */
 .close:hover {
-  color: #0a84ff;
+  color: #0a84ff; /* blue on hover */
 }
 
-/* Overlay covering the grid area only */
+/* Full-screen overlay that appears over the grid */
 #game-overlay {
-  position: absolute;
+  position: absolute; /* cover over parent */
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.75); /* semi-transparent black */
-  color: white;
-  font-size: 2em;
-  font-weight: 700;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 1em;
-  z-index: 1000; /* on top of grid */
-  white-space: pre-line; /* allow line breaks */
+  background-color: rgba(0, 0, 0, 0.75); /* semi-transparent dark */
+  color: white; /* white text */
+  font-size: 2em; /* large font */
+  font-weight: 700; /* bold */
+  display: flex; /* flexbox for centering */
+  justify-content: center; /* horizontal center */
+  align-items: center; /* vertical center */
+  text-align: center; /* center text */
+  padding: 1em; /* spacing */
+  z-index: 1000; /* above everything else */
+  white-space: pre-line; /* keep line breaks */
 }
 
-/* Hide overlay by default */
+/* Hide overlay when not in use */
 #game-overlay.hidden {
-  display: none;
-  pointer-events: none; /* disable pointer events when hidden */
+  display: none; /* hidden */
+  pointer-events: none; /* disable interaction */
 }
 
-/* Responsive scaling for overlay text on smaller screens */
+/* Responsive styles for small screens */
 @media (max-width: 480px) {
   #grid {
-    padding: 0 2vw;
-    gap: 4px;
+    padding: 0 2vw; /* reduce padding on small screens */
+    gap: 4px; /* reduce spacing between cells */
   }
 
   .cell {
-    font-size: clamp(0.8rem, 4vw, 1.1rem);
+    font-size: clamp(0.8rem, 4vw, 1.1rem); /* adjust font size */
   }
 
   #level-display {
-    font-size: 1.1em;
+    font-size: 1.1em; /* slightly smaller */
   }
 
   #result, #timer {
-    font-size: 1em;
+    font-size: 1em; /* standard size */
   }
 
   .modal-content {
-    padding: 12px 16px;
+    padding: 12px 16px; /* reduced padding */
   }
-  
+
   #game-overlay {
-    font-size: 1.2em;
-    padding: 0.8em;
+    font-size: 1.2em; /* smaller overlay text */
+    padding: 0.8em; /* less padding */
   }
 }
 
+/* Container for level navigation */
 #level-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 10px auto;
-  max-width: 600px;
-  font-size: 1.2em;
-  gap: 1em;
+  display: flex; /* flex layout */
+  justify-content: space-between; /* space between items */
+  align-items: center; /* vertically center items */
+  margin: 10px auto; /* spacing */
+  max-width: 600px; /* limit width */
+  font-size: 1.2em; /* slightly larger text */
+  gap: 1em; /* spacing between items */
 }
 
+/* Buttons inside level bar */
 #level-bar button {
-  background: none;
-  border: none;
-  font-size: 1.2em;
-  cursor: pointer;
-  color: white;
+  background: none; /* transparent background */
+  border: none; /* no border */
+  font-size: 1.2em; /* large text */
+  cursor: pointer; /* pointer on hover */
+  color: white; /* white text */
 }
 
+/* Hover effect for level bar buttons */
 #level-bar button:hover {
-  color: #ffd700;
+  color: #ffd700; /* gold color on hover */
 }
 
+/* Restart button styling */
 #restart-btn {
-  margin-top: 20px;
-  padding: 8px 16px;
-  font-size: 1em;
-  border-radius: 8px;
-  background-color: #444;
-  color: white;
-  border: none;
-  cursor: pointer;
+  margin-top: 20px; /* space above */
+  padding: 8px 16px; /* button padding */
+  font-size: 1em; /* standard size */
+  border-radius: 8px; /* rounded corners */
+  background-color: #444; /* dark background */
+  color: white; /* white text */
+  border: none; /* no border */
+  cursor: pointer; /* pointer on hover */
 }
 
+/* Hover effect for restart button */
 #restart-btn:hover {
-  background-color: #666;
+  background-color: #666; /* slightly lighter on hover */
 }
