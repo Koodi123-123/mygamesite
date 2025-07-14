@@ -29,29 +29,56 @@ let isMuted = false;
 let clickedNumbers = new Set();
 let gameStarted = false;
 let score = 0;
-let selectedIndex = 0; // ← Lisätty: nykyinen valittu ruutu
 
 // Äänet
 const soundCorrect = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
 const soundWrong = new Audio('https://actions.google.com/sounds/v1/cartoon/boing.ogg');
 const soundGameOver = new Audio('https://actions.google.com/sounds/v1/cartoon/concussive_drum_hit.ogg');
+const soundLevelUp = new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg');
 
 function preloadSounds() {
-  [soundCorrect, soundWrong, soundGameOver].forEach(sound => {
+  [soundCorrect, soundWrong, soundGameOver, soundLevelUp].forEach(sound => {
     sound.load();
     sound.addEventListener('error', () => {
       console.error(`Äänen lataus epäonnistui: ${sound.src}`);
     });
   });
+
+  // Aktivoi selaimen äänet käyttäjän ensimmäisestä klikkauksesta
+  document.body.addEventListener('click', () => {
+    [soundWrong, soundGameOver, soundLevelUp].forEach(snd => {
+      snd.play().then(() => {
+        snd.pause();
+        snd.currentTime = 0;
+      }).catch(() => {});
+    });
+  }, { once: true });
 }
 
+// Päivitetty playSound-funktio, joka varmistaa äänen toiston paremmin
 function playSound(audio) {
   if (isMuted) return;
-  if (audio.readyState >= 2) {
-    audio.currentTime = 0;
-    audio.play().catch(err => {
-      console.warn('Äänen toisto epäonnistui:', err);
-    });
+
+  try {
+    if (audio.readyState >= 2) {  // HAVE_CURRENT_DATA tai parempi
+      audio.pause();
+      audio.currentTime = 0;
+      audio.play().catch(err => {
+        console.warn('Äänen toisto epäonnistui:', err);
+      });
+    } else {
+      // Jos ääni ei ole valmis, yritä ladata ja toistaa kun valmis
+      audio.load();
+      audio.addEventListener('canplaythrough', () => {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.play().catch(err => {
+          console.warn('Äänen toisto epäonnistui canplaythrough-tapahtumassa:', err);
+        });
+      }, { once: true });
+    }
+  } catch (e) {
+    console.warn('Virhe playSound-funktiossa:', e);
   }
 }
 
@@ -65,13 +92,14 @@ function initGame() {
   score = 0;
   clickedNumbers.clear();
   resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
+  updateBestScore(); // Näytetään best score alussa myös
   timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
   gameStarted = false;
   setupGrid();
   stopTimer();
   stopShuffle();
-  restartBtn.disabled = true;
   hideOverlay();
+  restartBtn.disabled = true; // Estä restart alussa
 }
 
 function setupGrid() {
@@ -97,9 +125,6 @@ function setupGrid() {
     grid.appendChild(cell);
   }
 
-  selectedIndex = 0; // ← Resetoi valittu ruutu
-  updateSelectedCell(); // ← Korosta ensimmäinen ruutu
-
   let overlay = document.getElementById('game-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -110,14 +135,6 @@ function setupGrid() {
     if (overlay.parentElement !== grid) {
       grid.appendChild(overlay);
     }
-  }
-}
-
-function updateSelectedCell() {
-  const cells = Array.from(document.querySelectorAll('.cell'));
-  cells.forEach(cell => cell.classList.remove('selected'));
-  if (cells[selectedIndex]) {
-    cells[selectedIndex].classList.add('selected');
   }
 }
 
@@ -135,7 +152,7 @@ function handleClick(cell) {
     gameStarted = true;
     startTimer();
     startShuffle();
-    restartBtn.disabled = false;
+    restartBtn.disabled = false; // Käynnistä restart-nappi pelin alkaessa
   }
 
   if (!gameStarted) return;
@@ -149,6 +166,7 @@ function handleClick(cell) {
     playSound(soundCorrect);
 
     if (nextNumber > gridSize) {
+      playSound(soundLevelUp);
       endGame(true);
     }
   } else {
@@ -173,6 +191,28 @@ function flashBackground() {
 
 function updateResult() {
   resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
+  updateBestScore();
+}
+
+function updateBestScore() {
+  let bestScore = localStorage.getItem('bestScore');
+  bestScore = bestScore ? parseInt(bestScore, 10) : 0;
+
+  if (score > bestScore) {
+    bestScore = score;
+    localStorage.setItem('bestScore', bestScore);
+  }
+
+  // Näytetään paras tulos resultDisplayin alapuolella
+  let bestScoreEl = document.getElementById('best-score');
+  if (!bestScoreEl) {
+    bestScoreEl = document.createElement('div');
+    bestScoreEl.id = 'best-score';
+    bestScoreEl.style.marginTop = '6px';
+    bestScoreEl.style.fontWeight = 'bold';
+    resultDisplay.parentNode.insertBefore(bestScoreEl, resultDisplay.nextSibling);
+  }
+  bestScoreEl.textContent = `Best Score: ${bestScore}`;
 }
 
 function startTimer() {
@@ -181,6 +221,7 @@ function startTimer() {
     timer -= 0.01;
     if (timer <= 0) {
       timer = 0;
+      playSound(soundGameOver);
       endGame(false);
     }
     timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
@@ -197,35 +238,44 @@ function endGame(success) {
   gameStarted = false;
   restartBtn.disabled = false;
 
-  playSound(soundGameOver);
-
-  if (success) {
-    showOverlay(`<strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>`);
-    resultDisplay.innerHTML = `
-      Final Score: ${score}<br/>
-      Correct Clicks: ${correctClicks}<br/>
-      Wrong Clicks: ${wrongClicks}
-    `;
+  if (!success) {
+    playSound(soundGameOver);
+    showOverlay(`<strong>⏱️ Time's up! Try again to reach next level.</strong><br/>`, true);
+  } else {
+    showOverlay(`<strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>`, false);
     level++;
     setTimeout(() => {
       hideOverlay();
       initGame();
     }, 3000);
-  } else {
-    showOverlay(`<strong>⏱️ Time's up! Try again to reach next level.</strong><br/>`);
-    resultDisplay.innerHTML = `
-      Final Score: ${score}<br/>
-      Correct Clicks: ${correctClicks}<br/>
-      Wrong Clicks: ${wrongClicks}
-    `;
   }
+
+  resultDisplay.innerHTML = `
+    Final Score: ${score}<br/>
+    Correct Clicks: ${correctClicks}<br/>
+    Wrong Clicks: ${wrongClicks}
+  `;
+  updateBestScore();
 }
 
-function showOverlay(message) {
+function showOverlay(message, showRestartBtn = false) {
   const overlay = document.getElementById('game-overlay');
-  overlay.innerHTML = message;
+  overlay.innerHTML = `
+    <div class="overlay-content">
+      ${message}
+      ${showRestartBtn ? '<button id="restart-btn" class="restart-button" style="background-color: #1DB954; color: white; border: none; padding: 10px 20px; font-size: 1.1em; border-radius: 5px; cursor: pointer;">🔄 Restart</button>' : ''}
+    </div>
+  `;
   overlay.classList.remove('hidden');
   overlay.style.pointerEvents = 'auto';
+
+  if (showRestartBtn) {
+    const btn = document.getElementById('restart-btn');
+    btn.addEventListener('click', () => {
+      hideOverlay();
+      initGame();
+    });
+  }
 }
 
 function hideOverlay() {
@@ -248,11 +298,9 @@ function stopShuffle() {
 function shuffleUnclickedNumbers() {
   const cells = Array.from(grid.children);
   const unclickedCells = cells.filter(c => c.classList.contains('cell') && c.dataset.position !== undefined && !clickedNumbers.has(c.dataset.position));
-
   if (unclickedCells.length <= 1) return;
 
   const unclickedNumbers = unclickedCells.map(c => parseInt(c.dataset.number));
-
   shuffle(unclickedNumbers);
 
   for (let i = 0; i < unclickedCells.length; i++) {
@@ -264,20 +312,11 @@ function shuffleUnclickedNumbers() {
   }
 }
 
-// 🔊 Mute-painike
 muteBtn.addEventListener('click', () => {
   isMuted = !isMuted;
   muteBtn.textContent = isMuted ? '🔇 Muted' : '🔊 Mute';
 });
 
-// 🔄 Restart
-restartBtn.addEventListener('click', () => {
-  restartBtn.disabled = true;
-  hideOverlay();
-  initGame();
-});
-
-// ❔ Ohjeet
 showInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'block';
 });
@@ -286,38 +325,6 @@ closeInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'none';
 });
 
-// ⌨️ Näppäimistöohjaus
-window.addEventListener('keydown', (e) => {
-  const cells = Array.from(document.querySelectorAll('.cell'));
-  if (!cells.length) return;
-
-  const cols = Math.ceil(Math.sqrt(gridSize));
-
-  switch (e.key) {
-    case 'ArrowRight':
-      selectedIndex = (selectedIndex + 1) % cells.length;
-      break;
-    case 'ArrowLeft':
-      selectedIndex = (selectedIndex - 1 + cells.length) % cells.length;
-      break;
-    case 'ArrowDown':
-      selectedIndex = (selectedIndex + cols) % cells.length;
-      break;
-    case 'ArrowUp':
-      selectedIndex = (selectedIndex - cols + cells.length) % cells.length;
-      break;
-    case 'Enter':
-    case ' ':
-      handleClick(cells[selectedIndex]);
-      break;
-    default:
-      return;
-  }
-
-  updateSelectedCell();
-});
-
-// 🔄 Käynnistä peli
 window.addEventListener('load', () => {
   preloadSounds();
   initGame();
