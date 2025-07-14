@@ -9,278 +9,272 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
  */
 
-/* Base font size for the whole HTML document */
-html {
-  font-size: 100%; /* typically 16px */
+const grid = document.getElementById('grid');
+const levelDisplay = document.getElementById('level-display');
+const timerDisplay = document.getElementById('timer');
+const resultDisplay = document.getElementById('result');
+const restartBtn = document.getElementById('restart-btn');
+const muteBtn = document.getElementById('mute-btn');
+const showInstructionsBtn = document.getElementById('show-instructions-btn');
+const instructionsModal = document.getElementById('instructions-modal');
+const closeInstructionsBtn = document.getElementById('close-instructions');
+
+let level = 1;
+let gridSize = 25;
+let numbers = [];
+let correctClicks = 0;
+let wrongClicks = 0;
+let nextNumber = 1;
+let timer = 60.0;
+let timerInterval = null;
+let shuffleInterval = null;
+let isMuted = false;
+let clickedNumbers = new Set();
+let gameStarted = false;
+let score = 0;
+
+// Äänet
+const soundCorrect = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
+const soundWrong = new Audio('https://actions.google.com/sounds/v1/cartoon/boing.ogg');
+const soundGameOver = new Audio('https://actions.google.com/sounds/v1/cartoon/concussive_drum_hit.ogg');
+
+function preloadSounds() {
+  [soundCorrect, soundWrong, soundGameOver].forEach(sound => {
+    sound.load();
+    sound.addEventListener('error', () => {
+      console.error(`Äänen lataus epäonnistui: ${sound.src}`);
+    });
+  });
 }
 
-/* Body styles: dark theme, centered text, default font */
-body {
-  background-color: #222; /* dark background */
-  color: #eee; /* light text */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* clean sans-serif font */
-  padding: 20px; /* space around the content */
-  margin: 0; /* remove default margin */
-  text-align: center; /* center-align text */
-  font-size: 1rem; /* base font size */
-}
-
-/* Heading color for better visibility */
-h1 {
-  color: #39FF14; /* neon green */
-}
-
-/* Display for the level indicator */
-#level-display {
-  font-size: 1.3em; /* slightly larger text */
-  font-weight: bold; /* bold font */
-  margin-bottom: 10px; /* space below */
-  color: #39FF14; /* neon green */
-}
-
-/* Main grid container */
-#grid {
-  display: grid; /* use CSS grid layout */
-  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); /* responsive columns */
-  gap: 6px; /* spacing between cells */
-  margin: 20px auto; /* center the grid */
-  max-width: min(90vw, 600px); /* responsive width, max 600px */
-  max-height: 80vh; /* prevent grid from exceeding viewport height */
-  overflow-y: auto; /* scroll if content overflows vertically */
-  padding: 0 5vw; /* horizontal padding */
-  box-sizing: border-box; /* include padding in size */
-  user-select: none; /* disable text selection */
-  position: reltive; /* typo: should be 'relative' for positioning */
-}
-
-/* Style for each grid cell */
-.cell {
-  background-color: #333; /* dark cell background */
-  border-radius: 6px; /* rounded corners */
-  box-shadow: 0 0 8px #444 inset; /* inner glow */
-  font-weight: bold; /* bold text */
-  font-size: clamp(1.3rem, 3vw, 2rem); /* responsive text size */
-  aspect-ratio: 1 / 1; /* square shape */
-  text-align: center; /* center text */
-  cursor: pointer; /* pointer cursor on hover */
-  transition: background-color 0.3s ease; /* smooth color change */
-  user-select: none; /* disable text selection */
-  color: #eee; /* light text */
-  border: 2px solid transparent; /* invisible border (used for highlighting) */
-  display: flex; /* use flex to center content */
-  justify-content: center; /* horizontally center */
-  align-items: center; /* vertically center */
-}
-
-/* Hover effect for clickable cells */
-.cell:hover {
-  background-color: #0a84ff; /* bright blue background on hover */
-  border-color: #06f; /* highlight border */
-}
-
-/* Styling for correct answer cells */
-.cell.correct {
-  background-color: #39FF14; /* bright green background */
-  color: #fff; /* white text */
-  cursor: default; /* normal cursor */
-  border-color: #d15b9e; /* pink border */
-  box-shadow: 0 0 10px #d15b9e inset; /* inner glow */
-}
-
-/* Countdown timer display */
-#timer {
-  margin-top: 10px; /* spacing above */
-  font-size: 1.1em; /* slightly larger font */
-  font-weight: 600; /* semi-bold */
-  color: #fff; /* white text */
-}
-
-/* Result message after clicking */
-#result {
-  margin-top: 15px; /* spacing above */
-  font-size: 1.1em; /* slightly larger text */
-  font-weight: 600; /* semi-bold */
-  min-height: 4em; /* reserve vertical space */
-  white-space: pre-line; /* preserve line breaks */
-  text-align: center; /* center text */
-}
-
-/* Button container styles */
-#controls {
-  margin-top: 8px; /* spacing above */
-  display: flex; /* flex layout for buttons */
-  flex-wrap: wrap; /* wrap to next line if needed */
-  justify-content: center; /* center buttons */
-  gap: 6px; /* spacing between buttons */
-}
-
-/* General button styles */
-button {
-  cursor: pointer; /* pointer on hover */
-  font-size: 1em; /* base font size */
-  padding: 10px 16px; /* space inside button */
-  margin: 6px 6px 6px 0; /* space around buttons */
-  border-radius: 6px; /* rounded corners */
-  border: none; /* no border */
-  background-color: #ff69b4; /* hot pink background */
-  color: #fff; /* white text */
-  box-shadow: 0 3px 6px #b34780 inset; /* inner glow effect */
-  transition: background-color 0.25s ease; /* smooth hover transition */
-  user-select: none; /* disable text selection */
-}
-
-/* Button hover effect */
-button:hover {
-  background-color: #e055a0; /* darker pink */
-  color: #fff; /* white text */
-}
-
-/* Special styling for back buttons */
-.back-button {
-  background-color: #ff69b4; /* hot pink */
-  box-shadow: none; /* no inner shadow */
-}
-
-/* Hover effect for back buttons */
-.back-button:hover {
-  background-color: #e055a0; /* darker pink */
-}
-
-/* Modal window background */
-.modal {
-  display: none; /* hidden by default */
-  position: fixed; /* stay in place */
-  z-index: 20; /* sit above other elements */
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto; /* scroll if needed */
-  background-color: rgba(0,0,0,0.75); /* semi-transparent black */
-  padding-top: 60px; /* space from top */
-  user-select: none; /* disable text selection */
-}
-
-/* Modal content box */
-.modal-content {
-  background-color: #333; /* dark background */
-  margin: auto; /* center horizontally */
-  padding: 20px 30px; /* inner padding */
-  border: 1px solid #555; /* border */
-  width: 90%; /* responsive width */
-  max-width: 600px; /* max width */
-  color: #eee; /* light text */
-  border-radius: 12px; /* rounded corners */
-  text-align: left; /* align text left */
-}
-
-/* Close (X) button inside modal */
-.close {
-  color: #eee; /* light text */
-  float: right; /* align to right */
-  font-size: 28px; /* large size */
-  font-weight: bold; /* bold font */
-  cursor: pointer; /* pointer cursor */
-}
-
-/* Hover effect for close button */
-.close:hover {
-  color: #0a84ff; /* blue on hover */
-}
-
-/* Full-screen overlay that appears over the grid */
-#game-overlay {
-  position: absolute; /* cover over parent */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.75); /* semi-transparent dark */
-  color: white; /* white text */
-  font-size: 2em; /* large font */
-  font-weight: 700; /* bold */
-  display: flex; /* flexbox for centering */
-  justify-content: center; /* horizontal center */
-  align-items: center; /* vertical center */
-  text-align: center; /* center text */
-  padding: 1em; /* spacing */
-  z-index: 1000; /* above everything else */
-  white-space: pre-line; /* keep line breaks */
-}
-
-/* Hide overlay when not in use */
-#game-overlay.hidden {
-  display: none; /* hidden */
-  pointer-events: none; /* disable interaction */
-}
-
-/* Responsive styles for small screens */
-@media (max-width: 480px) {
-  #grid {
-    padding: 0 2vw; /* reduce padding on small screens */
-    gap: 4px; /* reduce spacing between cells */
-  }
-
-  .cell {
-    font-size: clamp(1rem, 5vw, 1.4rem); /* adjust font size */
-  }
-
-  #level-display {
-    font-size: 1.1em; /* slightly smaller */
-  }
-
-  #result, #timer {
-    font-size: 1em; /* standard size */
-  }
-
-  .modal-content {
-    padding: 12px 16px; /* reduced padding */
-  }
-
-  #game-overlay {
-    font-size: 1.2em; /* smaller overlay text */
-    padding: 0.8em; /* less padding */
+function playSound(audio) {
+  if (isMuted) return;
+  if (audio.readyState >= 2) {
+    audio.currentTime = 0;
+    audio.play().catch(err => {
+      console.warn('Aäänen toisto epäonnistui:', err);
+    });
   }
 }
 
-/* Container for level navigation */
-#level-bar {
-  display: flex; /* flex layout */
-  justify-content: space-between; /* space between items */
-  align-items: center; /* vertically center items */
-  margin: 10px auto; /* spacing */
-  max-width: 600px; /* limit width */
-  font-size: 1.2em; /* slightly larger text */
-  gap: 1em; /* spacing between items */
+function initGame() {
+  levelDisplay.textContent = `Level ${level}`;
+  gridSize = 25 + (level - 1) * 5;
+  nextNumber = 1;
+  correctClicks = 0;
+  wrongClicks = 0;
+  timer = 60.0;
+  score = 0;
+  clickedNumbers.clear();
+  resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
+  timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
+  gameStarted = false;
+  setupGrid();
+  stopTimer();
+  stopShuffle();
+  restartBtn.disabled = true;
+  hideOverlay();
 }
 
-/* Buttons inside level bar */
-#level-bar button {
-  background: none; /* transparent background */
-  border: none; /* no border */
-  font-size: 1.2em; /* large text */
-  cursor: pointer; /* pointer on hover */
-  color: white; /* white text */
+function setupGrid() {
+  numbers = [];
+  for (let i = 1; i <= gridSize; i++) {
+    numbers.push(i);
+  }
+
+  shuffle(numbers);
+
+  grid.style.gridTemplateColumns = `repeat(${Math.ceil(Math.sqrt(gridSize))}, 1fr)`;
+  grid.innerHTML = '';
+
+  for (let i = 0; i < numbers.length; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.textContent = numbers[i];
+    cell.dataset.number = numbers[i];
+    cell.dataset.position = i;
+
+    cell.addEventListener('click', () => handleClick(cell));
+
+    grid.appendChild(cell);
+  }
+
+  let overlay = document.getElementById('game-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'game-overlay';
+    overlay.classList.add('hidden');
+    grid.appendChild(overlay);
+  } else {
+    if (overlay.parentElement !== grid) {
+      grid.appendChild(overlay);
+    }
+  }
 }
 
-/* Hover effect for level bar buttons */
-#level-bar button:hover {
-  color: #ffd700; /* gold color on hover */
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 }
 
-/* Restart button styling */
-#restart-btn {
-  margin-top: 20px; /* space above */
-  padding: 8px 16px; /* button padding */
-  font-size: 1em; /* standard size */
-  border-radius: 8px; /* rounded corners */
-  background-color: #444; /* dark background */
-  color: white; /* white text */
-  border: none; /* no border */
-  cursor: pointer; /* pointer on hover */
+function handleClick(cell) {
+  const number = parseInt(cell.dataset.number);
+
+  if (!gameStarted && number === 1) {
+    gameStarted = true;
+    startTimer();
+    startShuffle();
+    restartBtn.disabled = false;
+  }
+
+  if (!gameStarted) return;
+
+  if (number === nextNumber) {
+    cell.classList.add('correct');
+    clickedNumbers.add(cell.dataset.position);
+    nextNumber++;
+    correctClicks++;
+    score += 10;
+    playSound(soundCorrect);
+
+    if (nextNumber > gridSize) {
+      endGame(true);
+    }
+  } else {
+    wrongClicks++;
+    score -= 5;
+    if (score < 0) score = 0;
+    flashBackground();
+    playSound(soundWrong);
+  }
+
+  updateResult();
 }
 
-/* Hover effect for restart button */
-#restart-btn:hover {
-  background-color: #666; /* slightly lighter on hover */
+function flashBackground() {
+  if (isMuted) return;
+  const originalColor = document.body.style.backgroundColor;
+  document.body.style.backgroundColor = '#ff4c4c';
+  setTimeout(() => {
+    document.body.style.backgroundColor = originalColor || '#222';
+  }, 200);
 }
+
+function updateResult() {
+  resultDisplay.textContent = `Score: ${score} | Correct: ${correctClicks} | Wrong: ${wrongClicks}`;
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timer -= 0.01;
+    if (timer <= 0) {
+      timer = 0;
+      endGame(false);
+    }
+    timerDisplay.textContent = `Time left: ${timer.toFixed(2)} s`;
+  }, 10);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+function endGame(success) {
+  stopTimer();
+  stopShuffle();
+  gameStarted = false;
+  restartBtn.disabled = false;
+
+  playSound(soundGameOver);
+
+  if (success) {
+    showOverlay(`<strong>🎉 Congratulations! You completed Level ${level}!</strong><br/>`);
+    resultDisplay.innerHTML = `
+      Final Score: ${score}<br/>
+      Correct Clicks: ${correctClicks}<br/>
+      Wrong Clicks: ${wrongClicks}
+    `;
+    level++;
+    setTimeout(() => {
+      hideOverlay();
+      initGame();
+    }, 3000);
+  } else {
+    showOverlay(`<strong>⏱️ Time's up! Try again to reach next level.</strong><br/>`);
+    resultDisplay.innerHTML = `
+      Final Score: ${score}<br/>
+      Correct Clicks: ${correctClicks}<br/>
+      Wrong Clicks: ${wrongClicks}
+    `;
+  }
+}
+
+function showOverlay(message) {
+  const overlay = document.getElementById('game-overlay');
+  overlay.innerHTML = message;
+  overlay.classList.remove('hidden');
+  overlay.style.pointerEvents = 'auto';
+}
+
+function hideOverlay() {
+  const overlay = document.getElementById('game-overlay');
+  overlay.classList.add('hidden');
+  overlay.style.pointerEvents = 'none';
+}
+
+function startShuffle() {
+  clearInterval(shuffleInterval);
+  shuffleInterval = setInterval(() => {
+    shuffleUnclickedNumbers();
+  }, 6000);
+}
+
+function stopShuffle() {
+  clearInterval(shuffleInterval);
+}
+
+function shuffleUnclickedNumbers() {
+  const cells = Array.from(grid.children);
+  const unclickedCells = cells.filter(c => c.classList.contains('cell') && c.dataset.position !== undefined && !clickedNumbers.has(c.dataset.position));
+
+  if (unclickedCells.length <= 1) return;
+
+  const unclickedNumbers = unclickedCells.map(c => parseInt(c.dataset.number));
+
+  shuffle(unclickedNumbers);
+
+  for (let i = 0; i < unclickedCells.length; i++) {
+    const num = unclickedNumbers[i];
+    if (!isNaN(num)) {
+      unclickedCells[i].textContent = num;
+      unclickedCells[i].dataset.number = num;
+    }
+  }
+}
+
+muteBtn.addEventListener('click', () => {
+  isMuted = !isMuted;
+  muteBtn.textContent = isMuted ? '🔇 Muted' : '🔊 Mute';
+});
+
+restartBtn.addEventListener('click', () => {
+  restartBtn.disabled = true;
+  hideOverlay();
+  initGame();
+});
+
+showInstructionsBtn.addEventListener('click', () => {
+  instructionsModal.style.display = 'block';
+});
+
+closeInstructionsBtn.addEventListener('click', () => {
+  instructionsModal.style.display = 'none';
+});
+
+window.addEventListener('load', () => {
+  preloadSounds();
+  initGame();
+});
