@@ -29,6 +29,7 @@ let isMuted = false;
 let clickedNumbers = new Set();
 let gameStarted = false;
 let score = 0;
+let selectedIndex = 0; // ← Lisätty: nykyinen valittu ruutu
 
 // Äänet
 const soundCorrect = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
@@ -49,7 +50,7 @@ function playSound(audio) {
   if (audio.readyState >= 2) {
     audio.currentTime = 0;
     audio.play().catch(err => {
-      console.warn('Aäänen toisto epäonnistui:', err);
+      console.warn('Äänen toisto epäonnistui:', err);
     });
   }
 }
@@ -96,6 +97,9 @@ function setupGrid() {
     grid.appendChild(cell);
   }
 
+  selectedIndex = 0; // ← Resetoi valittu ruutu
+  updateSelectedCell(); // ← Korosta ensimmäinen ruutu
+
   let overlay = document.getElementById('game-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -106,6 +110,14 @@ function setupGrid() {
     if (overlay.parentElement !== grid) {
       grid.appendChild(overlay);
     }
+  }
+}
+
+function updateSelectedCell() {
+  const cells = Array.from(document.querySelectorAll('.cell'));
+  cells.forEach(cell => cell.classList.remove('selected'));
+  if (cells[selectedIndex]) {
+    cells[selectedIndex].classList.add('selected');
   }
 }
 
@@ -252,17 +264,20 @@ function shuffleUnclickedNumbers() {
   }
 }
 
+// 🔊 Mute-painike
 muteBtn.addEventListener('click', () => {
   isMuted = !isMuted;
   muteBtn.textContent = isMuted ? '🔇 Muted' : '🔊 Mute';
 });
 
+// 🔄 Restart
 restartBtn.addEventListener('click', () => {
   restartBtn.disabled = true;
   hideOverlay();
   initGame();
 });
 
+// ❔ Ohjeet
 showInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'block';
 });
@@ -271,6 +286,38 @@ closeInstructionsBtn.addEventListener('click', () => {
   instructionsModal.style.display = 'none';
 });
 
+// ⌨️ Näppäimistöohjaus
+window.addEventListener('keydown', (e) => {
+  const cells = Array.from(document.querySelectorAll('.cell'));
+  if (!cells.length) return;
+
+  const cols = Math.ceil(Math.sqrt(gridSize));
+
+  switch (e.key) {
+    case 'ArrowRight':
+      selectedIndex = (selectedIndex + 1) % cells.length;
+      break;
+    case 'ArrowLeft':
+      selectedIndex = (selectedIndex - 1 + cells.length) % cells.length;
+      break;
+    case 'ArrowDown':
+      selectedIndex = (selectedIndex + cols) % cells.length;
+      break;
+    case 'ArrowUp':
+      selectedIndex = (selectedIndex - cols + cells.length) % cells.length;
+      break;
+    case 'Enter':
+    case ' ':
+      handleClick(cells[selectedIndex]);
+      break;
+    default:
+      return;
+  }
+
+  updateSelectedCell();
+});
+
+// 🔄 Käynnistä peli
 window.addEventListener('load', () => {
   preloadSounds();
   initGame();
